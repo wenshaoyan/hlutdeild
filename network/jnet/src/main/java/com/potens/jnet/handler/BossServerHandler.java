@@ -1,6 +1,6 @@
-package com.potens.jnet.server;
+package com.potens.jnet.handler;
 
-import com.potens.jnet.file.FileMapping;
+import com.potens.jnet.common.FileMapping;
 import com.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

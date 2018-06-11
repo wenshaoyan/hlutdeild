@@ -26,6 +26,7 @@ public class HBinaryProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
         HBinaryProtocol protocol = new HBinaryProtocol(id, flag, type, length, startRange, endRange, body);
         if (type == HBinaryProtocol.TYPE_TEXT || type == HBinaryProtocol.TYPE_FILE_APPLY || type == HBinaryProtocol.TYPE_FILE_AGREE) {
             protocol.setTextBody(new String(body, HBinaryProtocol.DEFAULT_TEXT_CHARSET));
+            protocol.setSystem(system);
         }
         out.add(protocol);
 

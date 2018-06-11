@@ -193,6 +193,7 @@ public class HBinaryProtocol {
     }
 
 
+
     public String getTextBody() {
         return textBody;
     }

@@ -1,4 +1,4 @@
-package com.potens.jnet.server;
+package com.potens.jnet.handler;
 
 import com.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,6 +34,8 @@ public class HeartBeatServerHandler extends SimpleChannelInboundHandler<HBinaryP
     public void channelRead0(ChannelHandlerContext ctx, HBinaryProtocol protocol) throws Exception {
         if (protocol.getFlag()== HBinaryProtocol.FLAG_HEARTBEAT) {
             loss_connect_time = 0;
+            System.out.println("server FLAG_HEARTBEAT..");
+
         } else {
             System.out.println("server channelRead..");
             ctx.fireChannelRead(protocol);

@@ -1,5 +1,7 @@
 package com.potens.jnet.server;
 
+import com.potens.jnet.handler.HeartBeatServerHandler;
+import com.potens.jnet.listener.FileCallback;
 import com.potens.jnet.protocol.HBinaryProtocol;
 import com.potens.jnet.protocol.HBinaryProtocolDecoder;
 import com.potens.jnet.protocol.HBinaryProtocolEncoder;
@@ -23,12 +25,80 @@ import java.util.concurrent.TimeUnit;
  * 端口31416
  */
 public class BossServer {
-
+    // 监听端口
     private int port;
+    // 文件接收保存的目录
+    private String fileUpSaveDir;
+    // 上传文件的监听
+    private FileCallback fileUpCallback;
+    // 下载文件的监听
+    private FileCallback fileDownCallback;
+
+    public BossServer() {};
 
     public BossServer(int port) {
         this.port = port;
     }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getFileUpSaveDir() {
+        return fileUpSaveDir;
+    }
+
+    public FileCallback getFileUpCallback() {
+        return fileUpCallback;
+    }
+
+    public FileCallback getFileDownCallback() {
+        return fileDownCallback;
+    }
+
+    // Fluent风格api=====================================
+
+    /**
+     * 设置监听的端口
+     * @param port  端口号
+     * @return      this
+     */
+    public BossServer listenerPort(int port) {
+        this.port = port;
+        return this;
+    }
+
+    /**
+     * 设置文件上传保存路径
+     * @param dir      目录
+     * @return          this
+     */
+    public BossServer fileUpSaveDir(String dir) {
+        this.fileUpSaveDir = dir;
+       return this;
+    }
+
+    /**
+     * 设置下载的监听回调
+     * @param fileCallback      回调对象
+     * @return                  this
+     */
+    public BossServer watcherDownFile(FileCallback fileCallback) {
+        this.fileDownCallback = fileCallback;
+        return this;
+    }
+
+    /**
+     * 设置上传的监听回调
+     * @param fileCallback      回调对象
+     * @return                  this
+     */
+    public BossServer watcherUpFile(FileCallback fileCallback) {
+        this.fileUpCallback = fileCallback;
+        return this;
+    }
+    // ==============================
+
 
     public void start() {
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
