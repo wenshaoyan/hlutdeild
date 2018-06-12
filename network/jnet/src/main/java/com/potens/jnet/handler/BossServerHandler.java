@@ -1,7 +1,9 @@
 package com.potens.jnet.handler;
 
 import com.potens.jnet.common.FileMapping;
+import com.potens.jnet.helper.ChannelGroupHelper;
 import com.potens.jnet.protocol.HBinaryProtocol;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
@@ -11,6 +13,14 @@ import io.netty.util.ReferenceCountUtil;
  *
  */
 public class BossServerHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        Channel ch = ctx.channel();
+        ChannelGroupHelper.add(ch);
+        System.out.println(ChannelGroupHelper.size());
+    }
+
+
 
     /**
      * 功能：读取完毕发送过来的数据之后的操作
