@@ -1,5 +1,6 @@
-package com.potens.jnet.server;
+package com.potens.jnet.bootstrap;
 
+import com.potens.jnet.handler.BossServerHandler;
 import com.potens.jnet.handler.HeartBeatServerHandler;
 import com.potens.jnet.listener.FileCallback;
 import com.potens.jnet.protocol.HBinaryProtocol;
@@ -16,6 +17,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
+import java.io.File;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -29,16 +32,17 @@ public class BossServer {
     private int port;
     // 文件接收保存的目录
     private String fileUpSaveDir;
-    // 上传文件的监听
-    private FileCallback fileUpCallback;
-    // 下载文件的监听
-    private FileCallback fileDownCallback;
 
-    public BossServer() {};
-
-    public BossServer(int port) {
-        this.port = port;
+    public BossServer() {
+        initDefault();
     }
+
+    private void initDefault() {
+        this.port = 31416;
+        this.fileUpSaveDir = "/d/tmp";
+    }
+
+    ;
 
     public int getPort() {
         return port;
@@ -48,20 +52,15 @@ public class BossServer {
         return fileUpSaveDir;
     }
 
-    public FileCallback getFileUpCallback() {
-        return fileUpCallback;
-    }
 
-    public FileCallback getFileDownCallback() {
-        return fileDownCallback;
-    }
 
     // Fluent风格api=====================================
 
     /**
      * 设置监听的端口
-     * @param port  端口号
-     * @return      this
+     *
+     * @param port 端口号
+     * @return this
      */
     public BossServer listenerPort(int port) {
         this.port = port;
@@ -70,36 +69,41 @@ public class BossServer {
 
     /**
      * 设置文件上传保存路径
-     * @param dir      目录
-     * @return          this
+     *
+     * @param dir 目录
+     * @return this
      */
     public BossServer fileUpSaveDir(String dir) {
         this.fileUpSaveDir = dir;
-       return this;
-    }
-
-    /**
-     * 设置下载的监听回调
-     * @param fileCallback      回调对象
-     * @return                  this
-     */
-    public BossServer watcherDownFile(FileCallback fileCallback) {
-        this.fileDownCallback = fileCallback;
         return this;
     }
 
-    /**
-     * 设置上传的监听回调
-     * @param fileCallback      回调对象
-     * @return                  this
-     */
-    public BossServer watcherUpFile(FileCallback fileCallback) {
-        this.fileUpCallback = fileCallback;
-        return this;
-    }
     // ==============================
 
+    /**
+     * 发送可序列化的对象
+     * @param serializable      对应的对象
+     */
+    public void sendText(Serializable serializable) {
 
+    }
+    /**
+     * 发送文本
+     * @param str               对应的文本
+     */
+    public void sendText(String str) {
+
+
+    }
+
+    /**
+     * 发送本地的文件
+     * @param file      文件对象
+     */
+    public void sendFile(File file, FileCallback fileCallback) {
+
+
+    }
     public void start() {
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -117,7 +121,7 @@ public class BossServer {
                             pipeline.addLast("decoder", new HBinaryProtocolDecoder());
                             pipeline.addLast("encoder", new HBinaryProtocolEncoder());
                             pipeline.addLast("heart",new HeartBeatServerHandler());
-
+                            pipeline.addLast("business",new BossServerHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 100)
@@ -132,7 +136,12 @@ public class BossServer {
             workerGroup.shutdownGracefully();
         }
     }
+
     public static void main(String[] args) {
-        new BossServer(31416).start();
+        BossServer bossServer = new BossServer();
+
+
+        bossServer.start();
+
     }
 }
