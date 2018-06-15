@@ -121,7 +121,10 @@ public class HBinaryProtocol {
     // 字符串body
     private String textBody;
 
-    public HBinaryProtocol(){};
+    private HBinaryProtocol() {
+    }
+
+    ;
     /*// 心跳包版本
     public HBinaryProtocol() {
         buildMessage(randomId(), FLAG_HEARTBEAT, TYPE_TEXT, 0, 0, 0,RECEIVE_SERVER, null,new byte[]{});
@@ -132,37 +135,72 @@ public class HBinaryProtocol {
         buildMessage(id, flag, type, length, startRange, endRange,receive, receiveId, body);
     }*/
     // 构造心跳包消息
-    public HBinaryProtocol buildHeartbeat() {
+    public static HBinaryProtocol buildHeartbeat() {
         HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
-        hBinaryProtocol.buildMessage(randomId(), FLAG_HEARTBEAT, TYPE_TEXT, 0, 0, 0,RECEIVE_SERVER, null,new byte[]{});
+        hBinaryProtocol.buildMessage(randomId(), FLAG_HEARTBEAT, TYPE_TEXT, 0, 0, 0, RECEIVE_SERVER, null, new byte[]{});
         return hBinaryProtocol;
     }
 
 
     // 指定receive的文本消息
-    private HBinaryProtocol buildText(String stringBody, byte receive, String receiveId) {
+    private static HBinaryProtocol buildText(String stringBody, byte receive, String receiveId) {
         HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
         byte[] bytes = TypeConvert.stringToBytes(stringBody);
-        hBinaryProtocol.buildMessage(randomId(), FLAG_BUSINESS, TYPE_TEXT, bytes.length, 0, bytes.length, receive, receiveId,bytes);
+        hBinaryProtocol.buildMessage(randomId(), FLAG_BUSINESS, TYPE_TEXT, bytes.length, 0, bytes.length, receive, receiveId, bytes);
         return hBinaryProtocol;
     }
 
     // 指定接收人的文本消息
-    public HBinaryProtocol buildReceiveAssignText(String stringBody, String channelIdString) {
+    public static HBinaryProtocol buildReceiveAssignText(String stringBody, String channelIdString) {
         return buildText(stringBody, RECEIVE_ASSIGN, channelIdString);
     }
-        // 指定接收group的文本消息
-    public HBinaryProtocol buildReceiveGroupText(String stringBody, String channelGroup) {
+
+    // 指定接收group的文本消息
+    public static HBinaryProtocol buildReceiveGroupText(String stringBody, String channelGroup) {
         return buildText(stringBody, RECEIVE_GROUP, channelGroup);
     }
+
     // 指定只server接收的文本消息
-    public HBinaryProtocol buildReceiveServerText(String stringBody) {
+    public static HBinaryProtocol buildReceiveServerText(String stringBody) {
         return buildText(stringBody, RECEIVE_SERVER, null);
     }
 
+    // 指定receive的文件消息
+    private static HBinaryProtocol buildFile(int id, byte[] bytes, byte receive, String receiveId, long startRange, long endRange) {
+        HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
+        hBinaryProtocol.buildMessage(id, FLAG_BUSINESS, TYPE_FILE, bytes.length, startRange, endRange, receive, receiveId, bytes);
+        return hBinaryProtocol;
+    }
+
+    // 指定接收人的文件消息
+    public static HBinaryProtocol buildReceiveAssignFile(int id, byte[] bytes, String channelIdString, long startRange, long endRange) {
+        return buildFile(id, bytes, RECEIVE_ASSIGN, channelIdString, startRange, endRange);
+    }
+
+    // 指定接收group的文件消息
+    public static HBinaryProtocol buildReceiveGroupFile(int id, byte[] bytes, String channelGroup, long startRange, long endRange) {
+        return buildFile(id, bytes, RECEIVE_GROUP, channelGroup, startRange, endRange);
+    }
+
+    // 指定只server接收的文件消息
+    public static HBinaryProtocol buildReceiveServerFile(int id, byte[] bytes, long startRange, long endRange) {
+        return buildFile(id, bytes, RECEIVE_SERVER, null, startRange, endRange);
+    }
 
 
-
+    // 发送简单文本消息
+    public static HBinaryProtocol buildSimpleText(int id,String stringBody, byte receive, String receiveId, byte type) {
+        HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
+        byte[] bytes = TypeConvert.stringToBytes(stringBody);
+        hBinaryProtocol.buildMessage(id, FLAG_BUSINESS, type, bytes.length, 0, bytes.length, receive, receiveId, bytes);
+        return hBinaryProtocol;
+    }
+    // 完整参数
+    public static HBinaryProtocol buildFull(int id, byte flag, byte type, long length, long startRange, long endRange, byte receive, String receiveId, byte[] body) {
+        HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
+        hBinaryProtocol.buildMessage(id, flag, type, length, startRange, endRange, receive, receiveId, body);
+        return hBinaryProtocol;
+    }
     // 通用版本
     /*public HBinaryProtocol(int id, byte flag, String stringBody, byte type) {
         byte[] bytes;
@@ -175,7 +213,7 @@ public class HBinaryProtocol {
     }*/
 
     // 构造Message
-    private void buildMessage(int id, byte flag, byte type, long length, long startRange, long endRange,byte receive, String receiveId, byte[] body) {
+    private void buildMessage(int id, byte flag, byte type, long length, long startRange, long endRange, byte receive, String receiveId, byte[] body) {
         this.id = id;
         this.system = CURRENT_SYSTEM;
         this.flag = flag;

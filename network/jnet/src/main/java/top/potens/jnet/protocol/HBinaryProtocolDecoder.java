@@ -32,7 +32,7 @@ public class HBinaryProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
         }
         byte[] body = new byte[(int) (endRange - startRange)];
         buf.readBytes(body);
-        HBinaryProtocol protocol = new HBinaryProtocol(id, flag, type, length, startRange, endRange, receive, receiveId, body);
+        HBinaryProtocol protocol = HBinaryProtocol.buildFull(id, flag, type, length, startRange, endRange, receive, receiveId, body);
         if (type == HBinaryProtocol.TYPE_TEXT || type == HBinaryProtocol.TYPE_FILE_APPLY || type == HBinaryProtocol.TYPE_FILE_AGREE) {
             protocol.setTextBody(new String(body, HBinaryProtocol.DEFAULT_TEXT_CHARSET));
             protocol.setSystem(system);

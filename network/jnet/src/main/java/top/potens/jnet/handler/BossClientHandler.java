@@ -24,8 +24,8 @@ public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtoc
 //        str = "HELLO, WORLD";
         for (int i = 0; i < 1; i++) {
             //ctx.writeAndFlush(str);
-            int id = HBinaryProtocol.randomId();
-            sendText(ctx, str, id);
+            //int id = HBinaryProtocol.randomId();
+            sendText(ctx, str);
         }
         for (int i = 0; i < 1; i++) {
             /*int id1 = HBinaryProtocol.randomId();
@@ -33,8 +33,7 @@ public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtoc
             sendFileApply(ctx, new File(filePath1), id1);*/
             int id2 = HBinaryProtocol.randomId();
             String filePath2 = "D:\\迅雷下载\\Ylmf_Ghost_Win7_SP1_x64_2018_0210.iso";
-            sendFileApply(ctx, new File(filePath2), id2);
-
+            // sendFileApply(ctx, new File(filePath2), id2);
 
         }
         System.out.println("init end");
@@ -49,14 +48,16 @@ public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtoc
     protected void channelRead0(final ChannelHandlerContext ctx, final HBinaryProtocol protocol) throws Exception {
 
         if (protocol.getType()== HBinaryProtocol.TYPE_FILE_AGREE) {
-            String str = new String(protocol.getBody(), HBinaryProtocol.DEFAULT_TEXT_CHARSET);
-            final String[] split = str.split("\\?");
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    sendFile(ctx, new File(split[1]), protocol.getId());
-                }
-            }).start();
+//            System.out.println("=======================");
+//
+//            String str = new String(protocol.getBody(), HBinaryProtocol.DEFAULT_TEXT_CHARSET);
+//            final String[] split = str.split("\\?");
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    sendFile(ctx, new File(split[1]), protocol.getId());
+//                }
+//            }).start();
         } else if (protocol.getType()== HBinaryProtocol.TYPE_TEXT) {
             System.out.println("接收到消息:"+protocol.getTextBody());
         }
@@ -64,66 +65,9 @@ public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtoc
     }
 
     // 发送文本
-    private void sendText(ChannelHandlerContext ctx, String str, int id) {
-        HBinaryProtocol protocol = new HBinaryProtocol(id, HBinaryProtocol.FLAG_BUSINESS, str, HBinaryProtocol.TYPE_TEXT);
+    private void sendText(ChannelHandlerContext ctx, String str) {
+        HBinaryProtocol protocol = HBinaryProtocol.buildReceiveServerText(str);
         ctx.writeAndFlush(protocol);
-    }
-
-    // 发送文件申请包
-    private void sendFileApply(ChannelHandlerContext ctx, File msg, int id) throws Exception {
-        boolean exists = msg.exists();
-        if (!exists) {
-            throw new Exception("not found file "+msg.getAbsolutePath());
-        }
-
-        // 发送申请包 带上文件名称和文件大小 中间以? 分割
-        HBinaryProtocol applyHBinaryProtocol = new HBinaryProtocol(id, HBinaryProtocol.FLAG_BUSINESS, msg.length()+"?"+msg.getAbsolutePath(), HBinaryProtocol.TYPE_FILE_APPLY);
-        ctx.writeAndFlush(applyHBinaryProtocol);
-
-    }
-
-    // 发送文件
-    private void sendFile(ChannelHandlerContext ctx, File msg, int id) {
-
-        RandomAccessFile rf = null;
-        try {
-            rf = new RandomAccessFile(msg, "r");;
-            // 文件总的大小
-            long tool = rf.length();
-            // 当前读取的字节数
-            long rfSeek = 0;
-            // 实际读取的直接说
-            int len = 0;
-            byte[] bytes = new byte[HBinaryProtocol.BODY_LENGTH];
-            int i=0;
-            while ((len = rf.read(bytes, 0, bytes.length)) != -1) {
-                HBinaryProtocol hBinaryProtocol = new HBinaryProtocol(id, HBinaryProtocol.FLAG_BUSINESS, HBinaryProtocol.TYPE_FILE, tool, rfSeek, rfSeek += len,HBinaryProtocol.RECEIVE_SERVER,null, bytes);
-                ctx.writeAndFlush(hBinaryProtocol);
-                System.out.println("rfSeek:"+rfSeek);
-                rf.seek(rfSeek);
-                i++;
-                if (i % 10 == 0) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            System.out.println("suc "+i);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (rf != null) {
-                try {
-                    rf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     @Override

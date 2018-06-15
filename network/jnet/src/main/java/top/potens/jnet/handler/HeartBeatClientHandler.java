@@ -39,7 +39,7 @@ public class HeartBeatClientHandler extends ChannelInboundHandlerAdapter {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.WRITER_IDLE) {
                 currentTime++;
-                ctx.writeAndFlush(new HBinaryProtocol());
+                ctx.writeAndFlush(HBinaryProtocol.buildHeartbeat());
             }
         }
     }

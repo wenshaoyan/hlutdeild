@@ -1,6 +1,7 @@
 package top.potens.jnet.bootstrap;
 
 import top.potens.jnet.handler.BossClientHandler;
+import top.potens.jnet.handler.FileHandler;
 import top.potens.jnet.handler.HeartBeatClientHandler;
 import top.potens.jnet.listener.FileCallback;
 import top.potens.jnet.protocol.HBinaryProtocol;
@@ -18,6 +19,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class BossClient {
     private int port;
     private String host;
+    private FileHandler fileHandler;
 
     public BossClient() {}
     // Fluent风格api=====================================
@@ -55,16 +58,14 @@ public class BossClient {
      * @param str               对应的文本
      */
     public void sendJson(String str) {
-
     }
 
     /**
      * 发送本地的文件
      * @param file      文件对象
      */
-    public void sendFile(File file, FileCallback fileCallback) {
-
-
+    public void sendFile(File file, FileCallback fileCallback) throws FileNotFoundException {
+        fileHandler.sendFile(file,fileCallback);
     }
     public void start() {
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -77,11 +78,13 @@ public class BossClient {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
+                            fileHandler = new FileHandler();
                             pipeline.addLast("ping", new IdleStateHandler(0,4,0, TimeUnit.SECONDS));
                             pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
                             pipeline.addLast("decoder", new HBinaryProtocolDecoder());
                             pipeline.addLast("encoder", new HBinaryProtocolEncoder());
                             pipeline.addLast("heart",new HeartBeatClientHandler());
+                            pipeline.addLast("file",fileHandler);
                             pipeline.addLast("business", new BossClientHandler());
                         }
                     });

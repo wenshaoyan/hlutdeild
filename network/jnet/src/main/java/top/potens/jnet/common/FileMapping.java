@@ -27,7 +27,6 @@ public class FileMapping {
         }
         return fileMapping;
     }
-
     // 打开文件
     public boolean add(int id, String fileTexBody) {
         if (!mapData.containsKey(id)) {
@@ -44,33 +43,40 @@ public class FileMapping {
 
 
     // 写入数据
-    public boolean write(int id, long seek, byte[] data) {
+    public boolean write(final int id, final long seek,final byte[] data) {
         if (mapData.containsKey(id)) {
-            Mapping mapping = mapData.get(id);
-            RandomAccessFile rf = null;
-            try {
-                rf = new RandomAccessFile(mapping.localFile, "rw");
-                rf.seek(seek);
-                rf.write(data);
-                mapping.addWriteSize(data.length);
-                System.out.println("=====写入中"+mapping.writeSize+"=="+mapping.toolSize + ",seek=" + seek);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (rf != null)rf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    threadWrite(id, seek, data);
                 }
-                // 写入完成
-                if (mapping.getToolSize() == mapping.writeSize) {
-                    System.out.println("=====写入完成");
-                }
-            }
+            }).start();
         }
         return false;
     }
-
+    private void threadWrite(int id, long seek, byte[] data) {
+        Mapping mapping = mapData.get(id);
+        RandomAccessFile rf = null;
+        try {
+            rf = new RandomAccessFile(mapping.localFile, "rw");
+            rf.seek(seek);
+            rf.write(data);
+            mapping.addWriteSize(data.length);
+            System.out.println("=====写入中"+mapping.writeSize+"=="+mapping.toolSize + ",seek=" + seek);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rf != null)rf.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // 写入完成
+            if (mapping.getToolSize() == mapping.writeSize) {
+                System.out.println("=====写入完成");
+            }
+        }
+    }
     class Mapping {
         private String remoterFile;
         private long toolSize;
