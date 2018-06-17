@@ -23,7 +23,7 @@ public class ChannelGroupHelper {
 
     // 添加一个client
     public static void add(Channel channel) {
-        channelIdMap.put(channel.id().asLongText(), channel.id());
+        channelIdMap.put(channel.id().asShortText(), channel.id());
         ALL_CHANNEL.add(channel);
     }
 
@@ -54,7 +54,12 @@ public class ChannelGroupHelper {
         return groupMap.get(groupId).writeAndFlush(msg);
     }
     // 指定channelId发送
-    public static boolean sendAssign(Object msg, ChannelId channelId) {
+    public static boolean sendAssign(Object msg, String stringChannelId) {
+        ChannelId channelId = channelIdMap.get(stringChannelId);
+        if (channelId == null) {
+            // TODO channelId为null 的错误提示
+            return false;
+        }
         Channel ch = ALL_CHANNEL.find(channelId);
         if (ch != null && ch.isActive()){
             ch.writeAndFlush(msg);

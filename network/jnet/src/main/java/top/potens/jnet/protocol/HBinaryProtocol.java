@@ -166,7 +166,7 @@ public class HBinaryProtocol {
     }
 
     // 指定receive的文件消息
-    private static HBinaryProtocol buildFile(int id, byte[] bytes, byte receive, String receiveId, long startRange, long endRange) {
+    public static HBinaryProtocol buildFile(int id, byte[] bytes, byte receive, String receiveId, long startRange, long endRange) {
         HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
         hBinaryProtocol.buildMessage(id, FLAG_BUSINESS, TYPE_FILE, bytes.length, startRange, endRange, receive, receiveId, bytes);
         return hBinaryProtocol;

@@ -1,6 +1,8 @@
 package top.potens.jnet.common;
 
 
+import top.potens.jnet.listener.FileCallback;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -12,7 +14,7 @@ import java.util.Map;
  * 保存message id 和文件的对应关系
  */
 public class FileMapping {
-    private static final String dir = "d:\\tmp";
+    private String dir = "d:\\tmp";
     private Map<Integer, Mapping> mapData = new HashMap<Integer, Mapping>();
 
     private FileMapping() {
@@ -27,6 +29,15 @@ public class FileMapping {
         }
         return fileMapping;
     }
+    // 设置目录
+    public void setDir(String dir) {
+        this.dir = dir;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
     // 打开文件
     public boolean add(int id, String fileTexBody) {
         if (!mapData.containsKey(id)) {
@@ -35,7 +46,7 @@ public class FileMapping {
                 return false;
             }
             long size = Long.parseLong(split[0]);
-            Mapping mapping = new Mapping(split[1], size);
+            Mapping mapping = new Mapping(split[1], size, dir);
             mapData.put(id, mapping);
         }
         return true;
@@ -43,18 +54,19 @@ public class FileMapping {
 
 
     // 写入数据
-    public boolean write(final int id, final long seek,final byte[] data) {
+    public boolean write(final int id, final long seek, final byte[] data, final FileCallback fileReceiveCallback) {
         if (mapData.containsKey(id)) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    threadWrite(id, seek, data);
+                    threadWrite(id, seek, data, fileReceiveCallback);
                 }
             }).start();
         }
         return false;
     }
-    private void threadWrite(int id, long seek, byte[] data) {
+
+    private void threadWrite(int id, long seek, byte[] data, FileCallback fileReceiveCallback) {
         Mapping mapping = mapData.get(id);
         RandomAccessFile rf = null;
         try {
@@ -62,28 +74,29 @@ public class FileMapping {
             rf.seek(seek);
             rf.write(data);
             mapping.addWriteSize(data.length);
-            System.out.println("=====写入中"+mapping.writeSize+"=="+mapping.toolSize + ",seek=" + seek);
+            fileReceiveCallback.process(id, mapping.toolSize, seek);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                if (rf != null)rf.close();
+                if (rf != null) rf.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
             // 写入完成
             if (mapping.getToolSize() == mapping.writeSize) {
-                System.out.println("=====写入完成");
+                fileReceiveCallback.end(id, mapping.toolSize);
             }
         }
     }
+
     class Mapping {
         private String remoterFile;
         private long toolSize;
         private long writeSize = 0;
         private String localFile;
 
-        public Mapping(String file, long size) {
+        public Mapping(String file, long size, String dir) {
             this.remoterFile = file;
             this.toolSize = size;
             // 获取文件名称

@@ -1,6 +1,10 @@
 package top.potens.jnet.bootstrap;
 
-import top.potens.jnet.handler.BossServerHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import top.potens.jnet.handler.BossServerEndHandler;
+import top.potens.jnet.handler.FileHandler;
+import top.potens.jnet.handler.ForwardHandler;
 import top.potens.jnet.handler.HeartBeatServerHandler;
 import top.potens.jnet.listener.FileCallback;
 import top.potens.jnet.protocol.HBinaryProtocol;
@@ -17,8 +21,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
-import java.io.File;
-import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -28,10 +30,14 @@ import java.util.concurrent.TimeUnit;
  * 端口31416
  */
 public class BossServer {
+    private static Logger logger = LogManager.getLogger(BossServer.class);
+
     // 监听端口
     private int port;
     // 文件接收保存的目录
     private String fileUpSaveDir;
+    private FileHandler fileHandler;
+    private FileCallback fileReceiveCallback;
 
     public BossServer() {
         initDefault();
@@ -41,9 +47,6 @@ public class BossServer {
         this.port = 31416;
         this.fileUpSaveDir = "/d/tmp";
     }
-
-    ;
-
     public int getPort() {
         return port;
     }
@@ -77,13 +80,21 @@ public class BossServer {
         this.fileUpSaveDir = dir;
         return this;
     }
-
+    /**
+     * 设置接受文件回调
+     * @param fileCallback  回调
+     * @return              this
+     */
+    public BossServer receiveFile(FileCallback fileCallback){
+        this.fileReceiveCallback = fileCallback;
+        return this;
+    }
     // ==============================
 
     public void start() {
+        logger.debug("start:listener port=" + this.port);
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
-
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -92,18 +103,21 @@ public class BossServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
+                            fileHandler = new FileHandler(fileReceiveCallback, fileUpSaveDir);
                             pipeline.addLast("ping", new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
                             pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
                             pipeline.addLast("decoder", new HBinaryProtocolDecoder());
                             pipeline.addLast("encoder", new HBinaryProtocolEncoder());
                             pipeline.addLast("heart",new HeartBeatServerHandler());
-                            pipeline.addLast("business",new BossServerHandler());
+                            pipeline.addLast("forward",new ForwardHandler());
+                            //pipeline.addLast("file",fileHandler);
+                            pipeline.addLast("end",new BossServerEndHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 100)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture f = b.bind().sync();
-            System.out.println("Server start listen at " + this.port);
+            logger.debug("Server start listen at " + this.port);
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

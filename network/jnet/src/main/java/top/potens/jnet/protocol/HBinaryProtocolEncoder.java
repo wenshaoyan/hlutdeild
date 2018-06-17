@@ -16,7 +16,7 @@ public class HBinaryProtocolEncoder extends MessageToByteEncoder<HBinaryProtocol
             throw new Exception("msg is null");
         }
         int bodyLength = (int)(protocol.getEndRange()- protocol.getStartRange());
-        out.writeInt(HBinaryProtocol.HEAD_LENGTH + bodyLength);
+        out.writeInt(HBinaryProtocol.HEAD_LENGTH + bodyLength + protocol.getReceiveIdLength());
         out.writeInt(protocol.getId());
         out.writeByte(protocol.getSystem());
         out.writeByte(protocol.getFlag());

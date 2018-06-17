@@ -1,5 +1,9 @@
 package top.potens.jnet.handler;
 
+import io.netty.channel.Channel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import top.potens.jnet.bootstrap.BossClient;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,18 +15,20 @@ import io.netty.handler.timeout.IdleStateEvent;
  * 接受心跳包
  */
 public class HeartBeatServerHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
-    private int loss_connect_time =0;
+    private static final Logger logger = LogManager.getLogger(HeartBeatServerHandler.class);
+
+    private int loss_connect_time = 0;
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        Channel ch = ctx.channel();
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
-                loss_connect_time++;
-                System.out.println("5 秒没有接收到客户端的信息了");
+                logger.warn("channelId=" + ch.id().asShortText() + " channel not send heard,loss_connect_time=" + ++loss_connect_time);
                 if (loss_connect_time > 2) {
-                    System.out.println("关闭这个不活跃的channel");
-                    ctx.channel().close();
+                    logger.warn("channelId=" + ch.id().asShortText() + " channel not active");
+                    ch.close();
                 }
             }
         } else {
@@ -32,18 +38,13 @@ public class HeartBeatServerHandler extends SimpleChannelInboundHandler<HBinaryP
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HBinaryProtocol protocol) throws Exception {
-        if (protocol.getFlag()== HBinaryProtocol.FLAG_HEARTBEAT) {
+        Channel ch = ctx.channel();
+        if (protocol.getFlag() == HBinaryProtocol.FLAG_HEARTBEAT) {
             loss_connect_time = 0;
-            System.out.println("server FLAG_HEARTBEAT..");
-
+            logger.debug("channelId=" + ch.id().asShortText() + " receive client heard");
         } else {
-            System.out.println("server channelRead..");
             ctx.fireChannelRead(protocol);
         }
     }
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
-        ctx.close();
-    }
+
 }

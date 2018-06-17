@@ -1,5 +1,9 @@
 package top.potens.jnet.handler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import top.potens.jnet.common.FileMapping;
+import top.potens.jnet.common.TypeConvert;
 import top.potens.jnet.listener.FileCallback;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
@@ -9,13 +13,29 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by wenshao on 2018/6/12.
- * 文件接收
+ * 文件发送和接收
  */
 public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
+    private static final Logger logger = LogManager.getLogger(FileHandler.class);
+
     private static ChannelHandlerContext mCtx;
+    private static final Map<Integer, FileCallback> fileMap = new HashMap<>();
+    private FileCallback mFileReceiveCallback;
+
+
+    public FileHandler(FileCallback fileCallback, String fileUpSaveDir) {
+        this.mFileReceiveCallback = fileCallback;
+        FileMapping.getInstance().setDir(fileUpSaveDir);
+    }
+
+    public FileHandler(FileCallback fileCallback) {
+        this.mFileReceiveCallback = fileCallback;
+    }
 
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         mCtx = ctx;
@@ -23,45 +43,68 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HBinaryProtocol protocol) throws Exception {
+        if (protocol.getType() == HBinaryProtocol.TYPE_FILE_AGREE) {
+            if (!fileMap.containsKey(protocol.getId())) {
+                logger.error("not found id"+protocol.getId() + " in fileMap");
+            } else {
+                FileCallback fileCallback = fileMap.get(protocol.getId());
+                String[] split = protocol.getTextBody().split("\\?");
+                // 通知开始发送
+                fileCallback.start(protocol.getId(), split[1], Long.parseLong(split[0]));
+                sendFileContinue(new File(split[1]), protocol.getId(), protocol.getReceive(), protocol.getReceiveId());
+            }
+        }  else if (protocol.getType() == HBinaryProtocol.TYPE_FILE) {
+            FileMapping.getInstance().write(protocol.getId(), protocol.getStartRange(), protocol.getBody(), mFileReceiveCallback);
+        } else {
+            ctx.fireChannelRead(protocol);
+        }
 
     }
 
-    // 发送文件
-    public void sendFile(File file, FileCallback fileCallback) throws FileNotFoundException {
+    // 发送文件外部调用方法
+    public void sendFile(File file, byte receive, String receiveId, FileCallback fileCallback) throws FileNotFoundException {
         int id = HBinaryProtocol.randomId();
-        sendFileApply(file, id);
+        sendFileApply(file, id, receive, receiveId);
+        fileMap.put(id, fileCallback);
 
     }
+
     // 发送文件申请包
-    private void sendFileApply(File msg, int id) throws FileNotFoundException {
-        boolean exists = msg.exists();
+    private void sendFileApply(File file, int id, byte receive, String receiveId) throws FileNotFoundException {
+        boolean exists = file.exists();
         if (!exists) {
-            throw new FileNotFoundException("not found file " + msg.getAbsolutePath());
+            throw new FileNotFoundException("not found file " + file.getAbsolutePath());
         }
         // 发送申请包 带上文件名称和文件大小 中间以? 分割
-        HBinaryProtocol applyHBinaryProtocol = HBinaryProtocol.buildSimpleText(id, msg.length() + "?" + msg.getAbsolutePath(), HBinaryProtocol.RECEIVE_SERVER, null, HBinaryProtocol.TYPE_FILE_APPLY);
+        HBinaryProtocol applyHBinaryProtocol = HBinaryProtocol.buildSimpleText(id, file.length() + "?" + file.getAbsolutePath(), receive, receiveId, HBinaryProtocol.TYPE_FILE_APPLY);
         mCtx.writeAndFlush(applyHBinaryProtocol);
 
     }
 
-    // 发送文件
-    private void sendFileContinue(File msg, int id) {
+    // 持续发送文件
+    private void sendFileContinue(File msg, int id, byte receive, String receiveId) {
         RandomAccessFile rf = null;
         try {
             rf = new RandomAccessFile(msg, "r");
-            ;
             // 文件总的大小
             long tool = rf.length();
             // 当前读取的字节数
             long rfSeek = 0;
-            // 实际读取的直接说
+            // 实际读取的byte 长度
             int len = 0;
-            byte[] bytes = new byte[HBinaryProtocol.BODY_LENGTH];
+            byte[] bytes;
+
+            if (receiveId == null) {
+                bytes = new byte[HBinaryProtocol.BODY_LENGTH];
+            } else {
+                bytes = new byte[HBinaryProtocol.BODY_LENGTH - TypeConvert.stringToBytes(receiveId).length];
+            }
             int i = 0;
+            FileCallback fileCallback = fileMap.get(id);
             while ((len = rf.read(bytes, 0, bytes.length)) != -1) {
-                HBinaryProtocol hBinaryProtocol = HBinaryProtocol.buildReceiveServerFile(id, bytes, rfSeek, rfSeek += len);
+                HBinaryProtocol hBinaryProtocol = HBinaryProtocol.buildFile(id, bytes, receive, receiveId, rfSeek, rfSeek += len);
                 mCtx.writeAndFlush(hBinaryProtocol);
-                System.out.println("rfSeek:" + rfSeek);
+                fileCallback.process(id, tool, rfSeek);
                 rf.seek(rfSeek);
                 i++;
                 if (i % 20 == 0) {
@@ -72,9 +115,7 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
                     }
                 }
             }
-            System.out.println("suc " + i);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            fileCallback.end(id, tool);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -87,6 +128,7 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
             }
         }
     }
+
 
 
 }
