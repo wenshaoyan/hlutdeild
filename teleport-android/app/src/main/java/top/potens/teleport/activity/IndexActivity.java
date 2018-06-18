@@ -19,6 +19,7 @@ import top.potens.teleport.adapter.FriendAdapter;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.constant.HandlerCode;
 import top.potens.teleport.data.FriendData;
+import top.potens.testlog.MyTest;
 
 /**
  * Created by wenshao on 2018/4/29.
@@ -80,6 +81,7 @@ public class IndexActivity extends AppCompatActivity {
         elv_user_list = findViewById(R.id.elv_user_list);
         mHandler.post(sRunnable);
 //        final BossClient bossClient = new BossClient();
+        MyTest.console();
     }
 
 }

@@ -3,6 +3,9 @@ package top.potens.teleport;
 import android.app.Application;
 import android.content.Context;
 
+import java.util.logging.Logger;
+
+
 /**
  * Created by Administrator on 2017/9/19.
  * 程序入口
