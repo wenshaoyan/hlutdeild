@@ -69,5 +69,6 @@ public class TestBoosClient {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
     }
 }
