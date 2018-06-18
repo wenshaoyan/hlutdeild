@@ -3,7 +3,7 @@ package top.potens.teleport.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import top.potens.hlutdeild.R;
+import top.potens.teleport.R;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.bean.FriendUserBean;
 

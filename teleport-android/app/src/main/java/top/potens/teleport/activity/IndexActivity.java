@@ -13,7 +13,8 @@ import java.lang.ref.WeakReference;
 import java.net.MulticastSocket;
 import java.util.List;
 
-import top.potens.hlutdeild.R;
+//import top.potens.jnet.bootstrap.BossClient;
+import top.potens.teleport.R;
 import top.potens.teleport.adapter.FriendAdapter;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.constant.HandlerCode;
@@ -78,6 +79,7 @@ public class IndexActivity extends AppCompatActivity {
         mContext = getApplicationContext();
         elv_user_list = findViewById(R.id.elv_user_list);
         mHandler.post(sRunnable);
+//        final BossClient bossClient = new BossClient();
     }
 
 }

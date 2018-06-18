@@ -1,4 +1,4 @@
-package top.potens.hlutdeild;
+package top.potens.teleport;
 
 import org.junit.Test;
 

@@ -10,10 +10,10 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import top.potens.hlutdeild.R;
+import top.potens.teleport.R;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.bean.FriendUserBean;
-import top.potens.hlutdeild.image.GlideApp;
+import top.potens.teleport.image.GlideApp;
 
 /**
  * Created by wenshao on 2018/4/30.
