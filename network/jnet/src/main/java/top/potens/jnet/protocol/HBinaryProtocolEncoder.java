@@ -8,6 +8,7 @@ import top.potens.jnet.common.TypeConvert;
 
 /**
  * Created by wenshao on 2018/5/6.
+ * HBinaryProtocol 解码器
  */
 public class HBinaryProtocolEncoder extends MessageToByteEncoder<HBinaryProtocol> {
     @Override

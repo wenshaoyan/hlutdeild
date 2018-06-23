@@ -1,7 +1,5 @@
 package top.potens.jnet.handler;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import top.potens.jnet.helper.ChannelGroupHelper;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.Channel;
@@ -15,13 +13,12 @@ import java.io.IOException;
  * 处理客户端连接、执行异常
  */
 public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
-    private static final Logger logger = LogManager.getLogger(BossServerEndHandler.class);
     // client 连接
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Channel ch = ctx.channel();
         ChannelGroupHelper.add(ch);
-        logger.debug("channelId=" + ch.id().asShortText() + " ip:"+ ch.remoteAddress() + " connect");
+        //logger.debug("channelId=" + ch.id().asShortText() + " ip:"+ ch.remoteAddress() + " connect");
 
     }
 
@@ -30,7 +27,7 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel ch = ctx.channel();
         ChannelGroupHelper.remove(ch);
-        logger.debug("channelId=" + ch.id().asShortText() + " ip:"+ ch.remoteAddress() + " close");
+        // logger.debug("channelId=" + ch.id().asShortText() + " ip:"+ ch.remoteAddress() + " close");
     }
 
 
@@ -51,7 +48,7 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("exceptionCaught",cause);
+        // logger.error("exceptionCaught",cause);
         ctx.close();
     }
 

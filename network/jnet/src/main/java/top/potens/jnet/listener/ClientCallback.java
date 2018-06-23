@@ -5,4 +5,8 @@ package top.potens.jnet.listener;
  * client 回调
  */
 public interface ClientCallback {
+    // 新的client加入
+
+
+
 }

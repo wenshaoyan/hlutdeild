@@ -1,7 +1,5 @@
 package top.potens.jnet.handler;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import top.potens.jnet.common.FileMapping;
 import top.potens.jnet.common.TypeConvert;
 import top.potens.jnet.listener.FileCallback;
@@ -21,7 +19,6 @@ import java.util.Map;
  * 文件发送和接收
  */
 public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
-    private static final Logger logger = LogManager.getLogger(FileHandler.class);
 
     private static ChannelHandlerContext mCtx;
     private static final Map<Integer, FileCallback> fileMap = new HashMap<>();
@@ -45,7 +42,7 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
     protected void channelRead0(ChannelHandlerContext ctx, HBinaryProtocol protocol) throws Exception {
         if (protocol.getType() == HBinaryProtocol.TYPE_FILE_AGREE) {
             if (!fileMap.containsKey(protocol.getId())) {
-                logger.error("not found id"+protocol.getId() + " in fileMap");
+                //logger.error("not found id"+protocol.getId() + " in fileMap");
             } else {
                 FileCallback fileCallback = fileMap.get(protocol.getId());
                 String[] split = protocol.getTextBody().split("\\?");

@@ -1,7 +1,6 @@
 package top.potens.jnet.handler;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import top.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -15,25 +14,25 @@ import java.util.Date;
  * 发送心跳包
  */
 public class HeartBeatClientHandler extends ChannelInboundHandlerAdapter {
-    private static final Logger logger = LogManager.getLogger(HeartBeatClientHandler.class);
+    // private static final Logger logger = LogManager.getLogger(HeartBeatClientHandler.class);
     private static final int TRY_TIMES = 3;
 
     private int currentTime = 0;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.debug("heard active");
+        // logger.debug("heard active");
         ctx.fireChannelActive();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.debug("heard stop");
+        // logger.debug("heard stop");
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        logger.debug("heard send");
+        // logger.debug("heard send");
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.WRITER_IDLE) {

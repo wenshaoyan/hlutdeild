@@ -1,7 +1,5 @@
 package top.potens.jnet.bootstrap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import top.potens.jnet.handler.BossClientHandler;
 import top.potens.jnet.handler.FileHandler;
 import top.potens.jnet.handler.HeartBeatClientHandler;
@@ -29,7 +27,6 @@ import java.util.concurrent.TimeUnit;
  * 主通信进程的client
  */
 public class BossClient {
-    private static Logger logger = LogManager.getLogger(BossClient.class);
     private int port;
     private String host;
     private FileHandler fileHandler;
@@ -91,7 +88,7 @@ public class BossClient {
     }
 
     public void start() {
-        logger.debug("start: host=" + this.host + ",port=" + this.port);
+        //logger.debug("start: host=" + this.host + ",port=" + this.port);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();

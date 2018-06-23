@@ -1,7 +1,5 @@
 package top.potens.jnet.bootstrap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import top.potens.jnet.handler.BossServerEndHandler;
 import top.potens.jnet.handler.FileHandler;
 import top.potens.jnet.handler.ForwardHandler;
@@ -30,7 +28,6 @@ import java.util.concurrent.TimeUnit;
  * 端口31416
  */
 public class BossServer {
-    private static Logger logger = LogManager.getLogger(BossServer.class);
 
     // 监听端口
     private int port;
@@ -92,7 +89,7 @@ public class BossServer {
     // ==============================
 
     public void start() {
-        logger.debug("start:listener port=" + this.port);
+        // logger.debug("start:listener port=" + this.port);
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -117,7 +114,7 @@ public class BossServer {
                     .option(ChannelOption.SO_BACKLOG, 100)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture f = b.bind().sync();
-            logger.debug("Server start listen at " + this.port);
+            // logger.debug("Server start listen at " + this.port);
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

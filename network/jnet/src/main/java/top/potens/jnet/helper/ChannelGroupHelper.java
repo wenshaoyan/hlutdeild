@@ -3,7 +3,6 @@ package top.potens.jnet.helper;
 import io.netty.channel.Channel;
 
 import io.netty.channel.ChannelId;
-import io.netty.channel.DefaultChannelId;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
