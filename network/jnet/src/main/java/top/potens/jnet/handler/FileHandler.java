@@ -34,8 +34,10 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
         this.mFileReceiveCallback = fileCallback;
     }
 
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         mCtx = ctx;
+        ctx.fireChannelActive();
     }
 
     @Override

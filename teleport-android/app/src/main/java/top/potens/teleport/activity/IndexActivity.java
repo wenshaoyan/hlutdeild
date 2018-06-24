@@ -13,13 +13,13 @@ import java.lang.ref.WeakReference;
 import java.net.MulticastSocket;
 import java.util.List;
 
-//import top.potens.jnet.bootstrap.BossClient;
+import top.potens.jnet.bootstrap.BossServer;
+import top.potens.jnet.listener.FileCallback;
 import top.potens.teleport.R;
 import top.potens.teleport.adapter.FriendAdapter;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.constant.HandlerCode;
 import top.potens.teleport.data.FriendData;
-import top.potens.testlog.MyTest;
 
 /**
  * Created by wenshao on 2018/4/29.
@@ -81,7 +81,40 @@ public class IndexActivity extends AppCompatActivity {
         elv_user_list = findViewById(R.id.elv_user_list);
         mHandler.post(sRunnable);
 //        final BossClient bossClient = new BossClient();
-        MyTest.console();
+        boot();
+
+    }
+    private void boot() {
+        final BossServer bossServer = new BossServer();
+        bossServer.fileUpSaveDir("d:\\tmp");
+        bossServer.receiveFile(new FileCallback() {
+            @Override
+            public void start(int id, String path, long size) {
+
+                System.out.println("r:start:id" + id + ",path:" + path);
+            }
+            @Override
+            public void process(int id, long size, long process) {
+                System.out.println("r:process:id:" + id + ",size:" + size + ",process:" + process);
+            }
+
+            @Override
+            public void end(int id, long size) {
+                System.out.println("r:end:id:" + id + ",size:" + size);
+            }
+        });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                bossServer.listenerPort(31416).start();
+            }
+        }).start();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

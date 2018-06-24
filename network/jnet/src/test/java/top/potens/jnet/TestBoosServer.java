@@ -1,8 +1,9 @@
 package top.potens.jnet;
 
 import top.potens.jnet.bootstrap.BossServer;
-import top.potens.jnet.handler.ForwardHandler;
 import top.potens.jnet.listener.FileCallback;
+
+import java.util.*;
 
 /**
  * Created by wenshao on 2018/6/14.
@@ -15,6 +16,7 @@ public class TestBoosServer {
         // Logger.addLogAdapter(new AndroidLogAdapter());
         final BossServer bossServer = new BossServer();
         bossServer.fileUpSaveDir("d:\\tmp");
+
         bossServer.receiveFile(new FileCallback() {
             @Override
             public void start(int id, String path, long size) {
@@ -39,9 +41,13 @@ public class TestBoosServer {
             }
         }).start();
         try {
-            Thread.sleep(3000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        bossServer.broadcastEvent("onMessage", "111111111");
     }
+    public void a(){
+    }
+
 }

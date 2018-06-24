@@ -1,9 +1,8 @@
 package top.potens.jnet.bootstrap;
 
-import top.potens.jnet.handler.BossServerEndHandler;
-import top.potens.jnet.handler.FileHandler;
-import top.potens.jnet.handler.ForwardHandler;
-import top.potens.jnet.handler.HeartBeatServerHandler;
+import io.netty.channel.group.ChannelGroupFuture;
+import top.potens.jnet.handler.*;
+import top.potens.jnet.helper.ChannelGroupHelper;
 import top.potens.jnet.listener.FileCallback;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import top.potens.jnet.protocol.HBinaryProtocolDecoder;
@@ -35,6 +34,7 @@ public class BossServer {
     private String fileUpSaveDir;
     private FileHandler fileHandler;
     private FileCallback fileReceiveCallback;
+    private BossServerEndHandler endHandler;
 
     public BossServer() {
         initDefault();
@@ -44,6 +44,7 @@ public class BossServer {
         this.port = 31416;
         this.fileUpSaveDir = "/d/tmp";
     }
+
     public int getPort() {
         return port;
     }
@@ -51,7 +52,6 @@ public class BossServer {
     public String getFileUpSaveDir() {
         return fileUpSaveDir;
     }
-
 
 
     // Fluent风格api=====================================
@@ -77,16 +77,35 @@ public class BossServer {
         this.fileUpSaveDir = dir;
         return this;
     }
+
     /**
      * 设置接受文件回调
-     * @param fileCallback  回调
-     * @return              this
+     *
+     * @param fileCallback 回调
+     * @return this
      */
-    public BossServer receiveFile(FileCallback fileCallback){
+    public BossServer receiveFile(FileCallback fileCallback) {
         this.fileReceiveCallback = fileCallback;
         return this;
     }
     // ==============================
+
+    // 广播到所有的client
+    public boolean broadcastEvent(String method, String string) {
+        ChannelGroupFuture broadcast = ChannelGroupHelper.broadcast(HBinaryProtocol.buildEventAll(method, string));
+        return true;
+    }
+
+    // 广播到组的所有client
+    public boolean broadcastEvent(String method, String string, String groupId) {
+        ChannelGroupFuture broadcast = ChannelGroupHelper.broadcast(HBinaryProtocol.buildEventAll(method, string), groupId);
+        return true;
+    }
+
+    // 发送到指定的client
+    public boolean assignEvent(String method, String string, String channelId) {
+        return ChannelGroupHelper.sendAssign(HBinaryProtocol.buildEventAll(method, string), channelId);
+    }
 
     public void start() {
         // logger.debug("start:listener port=" + this.port);
@@ -101,14 +120,16 @@ public class BossServer {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
                             fileHandler = new FileHandler(fileReceiveCallback, fileUpSaveDir);
+                            endHandler = new BossServerEndHandler();
                             pipeline.addLast("ping", new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
                             pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
                             pipeline.addLast("decoder", new HBinaryProtocolDecoder());
                             pipeline.addLast("encoder", new HBinaryProtocolEncoder());
-                            pipeline.addLast("heart",new HeartBeatServerHandler());
-                            pipeline.addLast("forward",new ForwardHandler());
+                            pipeline.addLast("heart", new HeartBeatServerHandler());
+                            pipeline.addLast("forward", new ForwardHandler());
                             //pipeline.addLast("file",fileHandler);
-                            pipeline.addLast("end",new BossServerEndHandler());
+//                            pipeline.addLast("rpc", new RPCHandler());
+                            pipeline.addLast("end", endHandler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 100)

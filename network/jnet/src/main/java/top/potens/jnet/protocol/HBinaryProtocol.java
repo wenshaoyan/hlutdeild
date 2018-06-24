@@ -3,6 +3,7 @@ package top.potens.jnet.protocol;
 import top.potens.jnet.common.TypeConvert;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Currency;
 import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Pattern;
@@ -58,9 +59,12 @@ public class HBinaryProtocol {
     public static final byte TYPE_FILE_AGREE = 0x23;
     // 文件类型
     public static final byte TYPE_FILE = 0x24;
-    // json 字符串
-    public static final byte TYPE_JSON = 0x25;
-
+    // RPC请求
+    public static final byte TYPE_RPC_REQ = 0x25;
+    // RPC响应
+    public static final byte TYPE_RPC_RES = 0x26;
+    // 通知事件
+    public static final byte TYPE_EVENT = 0x27;
 
     // 接受者只有server
     public static final byte RECEIVE_SERVER = 0x30;
@@ -70,6 +74,8 @@ public class HBinaryProtocol {
     public static final byte RECEIVE_GROUP = 0x32;
     // 所有client
     public static final byte RECEIVE_ALL = 0x33;
+    // 发送者
+    public static final byte RECEIVE_SEND = 0x34;
 
     // 每条消息的最大长度 最大为10M
     public static final int MAX_LENGTH = 1024 * 1024 * 20;
@@ -160,7 +166,7 @@ public class HBinaryProtocol {
         return buildText(stringBody, RECEIVE_GROUP, channelGroup);
     }
 
-    // 指定只server接收的文本消息
+    // 指定只有server接收的文本消息
     public static HBinaryProtocol buildReceiveServerText(String stringBody) {
         return buildText(stringBody, RECEIVE_SERVER, null);
     }
@@ -187,14 +193,66 @@ public class HBinaryProtocol {
         return buildFile(id, bytes, RECEIVE_SERVER, null, startRange, endRange);
     }
 
+    // send req rpc
+    public static HBinaryProtocol buildReqRPC(String stringBody) {
+        HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
+        byte[] bytes = TypeConvert.stringToBytes(stringBody);
+        hBinaryProtocol.buildMessage(randomId(), FLAG_BUSINESS, TYPE_RPC_REQ, bytes.length, 0, bytes.length, RECEIVE_SERVER, null, bytes);
+        return hBinaryProtocol;
+    }
+
+
+    // send res rpc
+    private static HBinaryProtocol buildResRPC(String stringBody) {
+        HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
+        byte[] bytes = TypeConvert.stringToBytes(stringBody);
+        hBinaryProtocol.buildMessage(randomId(), FLAG_BUSINESS, TYPE_RPC_RES, bytes.length, 0, bytes.length, RECEIVE_SEND, null, bytes);
+        return hBinaryProtocol;
+    }
+
+    // req转换为res包
+    public static HBinaryProtocol buildReqToRes(HBinaryProtocol ps, String stringBody) {
+        HBinaryProtocol protocol = buildResRPC(stringBody);
+        protocol.setId(ps.getId());
+        return protocol;
+
+    }
+
+
+    // 发送异步通知事件
+    public static HBinaryProtocol buildEvent(String method, String stringBody, byte receive, String receiveId) {
+        // method + "?" + stringBody
+        stringBody = method + "?" + stringBody;
+
+        HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
+        byte[] bytes = TypeConvert.stringToBytes(stringBody);
+        hBinaryProtocol.buildMessage(randomId(), FLAG_BUSINESS, TYPE_EVENT, bytes.length, 0, bytes.length, receive, receiveId, bytes);
+        return hBinaryProtocol;
+    }
+
+    // 发送异步通知事件 指定人
+    public static HBinaryProtocol buildEventAssign(String method, String stringBody, String receiveId) {
+        return buildEvent(method,stringBody, RECEIVE_ASSIGN, receiveId);
+    }
+
+    // 发送异步通知事件 指定组
+    public static HBinaryProtocol buildEventGroup(String method, String stringBody, String receiveId) {
+        return buildEvent(method,stringBody, RECEIVE_GROUP, receiveId);
+    }
+
+    // 发送异步通知事件 所有人
+    public static HBinaryProtocol buildEventAll(String method, String stringBody) {
+        return buildEvent(method,stringBody, RECEIVE_ALL, null);
+    }
 
     // 发送简单文本消息
-    public static HBinaryProtocol buildSimpleText(int id,String stringBody, byte receive, String receiveId, byte type) {
+    public static HBinaryProtocol buildSimpleText(int id, String stringBody, byte receive, String receiveId, byte type) {
         HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();
         byte[] bytes = TypeConvert.stringToBytes(stringBody);
         hBinaryProtocol.buildMessage(id, FLAG_BUSINESS, type, bytes.length, 0, bytes.length, receive, receiveId, bytes);
         return hBinaryProtocol;
     }
+
     // 完整参数
     public static HBinaryProtocol buildFull(int id, byte flag, byte type, long length, long startRange, long endRange, byte receive, String receiveId, byte[] body) {
         HBinaryProtocol hBinaryProtocol = new HBinaryProtocol();

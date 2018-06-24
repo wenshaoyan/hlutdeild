@@ -1,11 +1,12 @@
 package top.potens.jnet;
 
+import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.bootstrap.BossClient;
+import top.potens.jnet.event.EventSource;
 import top.potens.jnet.listener.FileCallback;
-import top.potens.jnet.protocol.HBinaryProtocol;
+import top.potens.jnet.listener.RPCCallback;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.util.HashMap;
 
 /**
  * Created by wenshao on 2018/6/14.
@@ -14,8 +15,11 @@ import java.io.FileNotFoundException;
 public class TestBoosClient {
 
     public static void main(String[] args) {
+        MyEventListener listener = new MyEventListener();
+
+
         final BossClient bossClient = new BossClient();
-        bossClient.connect("127.0.0.1", 31416);
+        bossClient.connect("127.0.0.1", 31416).addServerEventListener(listener);
         bossClient.receiveFile(new FileCallback() {
             @Override
             public void start(int id, String path, long size) {
@@ -45,13 +49,23 @@ public class TestBoosClient {
             e.printStackTrace();
         }
 
+        HashMap<String, String> stringStringHashMap = new HashMap<>();
+        stringStringHashMap.put("a", "1");
+        RPCHeader test = new RPCHeader("test", stringStringHashMap);
+        bossClient.sendRPC(test, new RPCCallback<Integer>() {
+            @Override
+            public void succeed(Integer o) {
+                System.out.println(o.intValue());
+            }
+
+            @Override
+            public void error(String error) {
+                System.out.println(error);
+            }
+        });
 
 
-
-
-
-
-        try {
+        /*try {
             bossClient.sendFile(new File("D:\\data\\build.zip"),HBinaryProtocol.RECEIVE_ASSIGN,"45bf74d2", new FileCallback() {
 //            bossClient.sendFile(new File("D:\\data\\build.zip"), HBinaryProtocol.RECEIVE_SERVER, null, new FileCallback() {
                 @Override
@@ -71,7 +85,7 @@ public class TestBoosClient {
             });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 }

@@ -1,9 +1,10 @@
 package top.potens.jnet.bootstrap;
 
-import top.potens.jnet.handler.BossClientHandler;
-import top.potens.jnet.handler.FileHandler;
-import top.potens.jnet.handler.HeartBeatClientHandler;
+import top.potens.jnet.bean.RPCHeader;
+import top.potens.jnet.event.EventSource;
+import top.potens.jnet.handler.*;
 import top.potens.jnet.listener.FileCallback;
+import top.potens.jnet.listener.RPCCallback;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import top.potens.jnet.protocol.HBinaryProtocolDecoder;
 import top.potens.jnet.protocol.HBinaryProtocolEncoder;
@@ -20,6 +21,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.EventListener;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,8 +33,11 @@ public class BossClient {
     private String host;
     private FileHandler fileHandler;
     private FileCallback fileReceiveCallback;
-
+    private RPCHandler mRPCHandler;
+    private EventHandler mEventHandler;
+    private EventSource eventSource;
     public BossClient() {
+        this.eventSource = new EventSource();
     }
     // Fluent风格api=====================================
 
@@ -59,6 +64,16 @@ public class BossClient {
         this.fileReceiveCallback = fileCallback;
         return this;
     }
+    /**
+     * 添加server event
+     * @param eventListener     listener
+     * @return this
+     */
+    public BossClient addServerEventListener(EventListener eventListener) {
+        this.eventSource.addListener(eventListener);
+        return this;
+    }
+
     // ===========
 
     /**
@@ -87,6 +102,18 @@ public class BossClient {
         fileHandler.sendFile(file, receive, receiveId, fileCallback);
     }
 
+    /**
+     * 发送rpc请求
+     * @param rpcHeader     请求头
+     * @param rpcCallback   响应回调
+     */
+    public void sendRPC(RPCHeader rpcHeader, RPCCallback rpcCallback) {
+        mRPCHandler.sendRPC(rpcHeader, rpcCallback);
+
+    }
+
+
+
     public void start() {
         //logger.debug("start: host=" + this.host + ",port=" + this.port);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -99,12 +126,16 @@ public class BossClient {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
                             fileHandler = new FileHandler(fileReceiveCallback);
+                            mRPCHandler = new RPCHandler();
+                            mEventHandler = new EventHandler(eventSource);
                             pipeline.addLast("ping", new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
                             pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
                             pipeline.addLast("decoder", new HBinaryProtocolDecoder());
                             pipeline.addLast("encoder", new HBinaryProtocolEncoder());
                             pipeline.addLast("heart", new HeartBeatClientHandler());
                             pipeline.addLast("file", fileHandler);
+                            pipeline.addLast("rpc", mRPCHandler);
+                            pipeline.addLast("event", mEventHandler);
                             pipeline.addLast("business", new BossClientHandler());
                         }
                     });

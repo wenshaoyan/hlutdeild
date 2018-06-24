@@ -7,6 +7,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import top.potens.jnet.bean.Client;
+import top.potens.jnet.bean.ClientGroup;
 
 import java.util.*;
 
@@ -18,12 +20,17 @@ public class ChannelGroupHelper {
     private static final ChannelGroup ALL_CHANNEL = new DefaultChannelGroup("__all", GlobalEventExecutor.INSTANCE);
     private static final Map<String, ChannelGroup> groupMap = new HashMap<>();
     private static final Map<String, ChannelId> channelIdMap = new HashMap<>();
-
+    private static final List<Client> allClient = new ArrayList<>();
+    private static final List<ClientGroup> allClientGroup = new ArrayList<>();
 
     // 添加一个client
     public static void add(Channel channel) {
-        channelIdMap.put(channel.id().asShortText(), channel.id());
+        String channelId = channel.id().asShortText();
+        channelIdMap.put(channelId, channel.id());
         ALL_CHANNEL.add(channel);
+        String address = channel.remoteAddress().toString().substring(1);
+        Client client = new Client(channelId, address);
+        allClient.add(client);
     }
 
     // 加入到某个组

@@ -10,7 +10,7 @@ public class Client {
     // 连接标识id
     private String channelId;
     // 地址
-    private InetAddress address;
+    private String address;
     // 头像
     private String image;
     // MAC地址
@@ -18,8 +18,11 @@ public class Client {
     // 设备名称
     private String device;
 
-
-    public Client(String channelId, InetAddress address, String image, String mac, String device) {
+    public Client(String channelId, String address) {
+        this.channelId = channelId;
+        this.address = address;
+    }
+    public Client(String channelId, String address, String image, String mac, String device) {
         this.channelId = channelId;
         this.address = address;
         this.image = image;
@@ -35,11 +38,11 @@ public class Client {
         this.channelId = channelId;
     }
 
-    public InetAddress getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setAddress(InetAddress address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 

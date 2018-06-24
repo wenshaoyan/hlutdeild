@@ -38,10 +38,15 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, HBinaryProtocol hBinaryProtocol) throws Exception {
-        if (hBinaryProtocol.getType() == HBinaryProtocol.TYPE_TEXT) {
-            System.out.println(hBinaryProtocol.getTextBody());
-            System.out.println(hBinaryProtocol.getBody().length);
+    public void channelRead0(ChannelHandlerContext ctx, HBinaryProtocol protocol) throws Exception {
+        /*if (hBinaryProtocol.getType() == HBinaryProtocol.TYPE_RPC_REQ) {
+            // System.out.println(hBinaryProtocol.getTextBody());
+            // System.out.println(hBinaryProtocol.getBody().length);
+        }*/
+        if (protocol.getType() == HBinaryProtocol.TYPE_RPC_REQ) {
+            System.out.println(protocol.getTextBody());
+            HBinaryProtocol protocolRes = HBinaryProtocol.buildReqToRes(protocol, "1");
+            ctx.writeAndFlush(protocolRes);
         }
     }
 

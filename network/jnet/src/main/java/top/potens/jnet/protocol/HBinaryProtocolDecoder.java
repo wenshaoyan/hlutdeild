@@ -34,7 +34,13 @@ public class HBinaryProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
         buf.readBytes(body);
         HBinaryProtocol protocol = HBinaryProtocol.buildFull(id, flag, type, length, startRange, endRange, receive, receiveId, body);
         if (type == HBinaryProtocol.TYPE_TEXT || type == HBinaryProtocol.TYPE_FILE_APPLY || type == HBinaryProtocol.TYPE_FILE_AGREE) {
-            protocol.setTextBody(new String(body, HBinaryProtocol.DEFAULT_TEXT_CHARSET));
+            protocol.setTextBody(TypeConvert.bytesToString(body));
+            protocol.setSystem(system);
+        } else if (type == HBinaryProtocol.TYPE_RPC_RES || type == HBinaryProtocol.TYPE_RPC_REQ) {
+            protocol.setTextBody(TypeConvert.bytesToString(body));
+            protocol.setSystem(system);
+        } else if (type == HBinaryProtocol.TYPE_EVENT) {
+            protocol.setTextBody(TypeConvert.bytesToString(body));
             protocol.setSystem(system);
         }
         out.add(protocol);

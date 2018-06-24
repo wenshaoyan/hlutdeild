@@ -25,6 +25,9 @@ public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtoc
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final HBinaryProtocol protocol) throws Exception {
 
+        /*if (protocol.getType() == HBinaryProtocol.TYPE_RPC_REQ) {
+
+        }*/
 
 
     }
