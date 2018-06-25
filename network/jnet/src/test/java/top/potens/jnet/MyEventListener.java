@@ -12,9 +12,7 @@ import java.util.Map;
  */
 
 public class MyEventListener implements EventListener {
-
     public void onMessage(EventObject e, String args) {
-        System.out.println(e.getSource());
         System.out.println(args);
     }
     public void onClientSync(EventObject e, String jsonString) {

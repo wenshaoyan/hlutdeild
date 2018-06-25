@@ -1,5 +1,7 @@
 package top.potens.jnet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.bootstrap.BossClient;
 import top.potens.jnet.event.EventSource;
@@ -13,6 +15,7 @@ import java.util.HashMap;
  * test
  */
 public class TestBoosClient {
+    private static final Logger logger = LoggerFactory.getLogger(TestBoosClient.class);
 
     public static void main(String[] args) {
         MyEventListener listener = new MyEventListener();
@@ -52,10 +55,10 @@ public class TestBoosClient {
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("a", "1");
         RPCHeader test = new RPCHeader("test", stringStringHashMap);
-        bossClient.sendRPC(test, new RPCCallback<Integer>() {
+        bossClient.sendRPC(test, new RPCCallback<String>() {
             @Override
-            public void succeed(Integer o) {
-                System.out.println(o.intValue());
+            public void succeed(String o) {
+                System.out.println(o);
             }
 
             @Override

@@ -4,6 +4,7 @@ import io.netty.channel.group.ChannelGroupFuture;
 import top.potens.jnet.handler.*;
 import top.potens.jnet.helper.ChannelGroupHelper;
 import top.potens.jnet.listener.FileCallback;
+import top.potens.jnet.listener.RPCReqHandlerListener;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import top.potens.jnet.protocol.HBinaryProtocolDecoder;
 import top.potens.jnet.protocol.HBinaryProtocolEncoder;
@@ -35,6 +36,7 @@ public class BossServer {
     private FileHandler fileHandler;
     private FileCallback fileReceiveCallback;
     private BossServerEndHandler endHandler;
+    private RPCReqHandlerListener rpcReqListener;
 
     public BossServer() {
         initDefault();
@@ -88,6 +90,10 @@ public class BossServer {
         this.fileReceiveCallback = fileCallback;
         return this;
     }
+    public BossServer setRPCReqListener(RPCReqHandlerListener rpcReqListener) {
+        this.rpcReqListener = rpcReqListener;
+        return this;
+    }
     // ==============================
 
     // 广播到所有的client
@@ -120,7 +126,7 @@ public class BossServer {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
                             fileHandler = new FileHandler(fileReceiveCallback, fileUpSaveDir);
-                            endHandler = new BossServerEndHandler();
+                            endHandler = new BossServerEndHandler(rpcReqListener);
                             pipeline.addLast("ping", new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
                             pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
                             pipeline.addLast("decoder", new HBinaryProtocolDecoder());
@@ -144,4 +150,6 @@ public class BossServer {
             workerGroup.shutdownGracefully();
         }
     }
+
+
 }

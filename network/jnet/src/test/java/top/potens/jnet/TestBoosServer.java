@@ -1,5 +1,7 @@
 package top.potens.jnet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.bootstrap.BossServer;
 import top.potens.jnet.listener.FileCallback;
 
@@ -10,13 +12,13 @@ import java.util.*;
  * test
  */
 public class TestBoosServer {
-   // private static final Logger logger = LogManager.getLogger(TestBoosServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestBoosClient.class);
 
     public static void main(String[] args) {
         // Logger.addLogAdapter(new AndroidLogAdapter());
         final BossServer bossServer = new BossServer();
         bossServer.fileUpSaveDir("d:\\tmp");
-
+        bossServer.setRPCReqListener(new RPCHandler());
         bossServer.receiveFile(new FileCallback() {
             @Override
             public void start(int id, String path, long size) {
@@ -46,6 +48,7 @@ public class TestBoosServer {
             e.printStackTrace();
         }
         bossServer.broadcastEvent("onMessage", "111111111");
+        logger.debug("-=");
     }
     public void a(){
     }

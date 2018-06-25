@@ -1,5 +1,6 @@
 package top.potens.jnet.bootstrap;
 
+
 import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.event.EventSource;
 import top.potens.jnet.handler.*;
@@ -82,7 +83,6 @@ public class BossClient {
      * @param str 对应的文本
      */
     public void sendText(String str) {
-
     }
 
     /**
