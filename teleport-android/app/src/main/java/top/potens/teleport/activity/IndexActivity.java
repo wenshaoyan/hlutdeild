@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ExpandableListView;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.ref.WeakReference;
 
 import java.net.MulticastSocket;
@@ -25,7 +28,8 @@ import top.potens.teleport.data.FriendData;
  * Created by wenshao on 2018/4/29.
  */
 public class IndexActivity extends AppCompatActivity {
-    private String TAG = "IndexActivity";
+    private static final Logger logger = LoggerFactory.getLogger(IndexActivity.class);
+
     private Context mContext;
     private ExpandableListView elv_user_list;
     private List<FriendGroupBean> mFriends;
@@ -87,6 +91,7 @@ public class IndexActivity extends AppCompatActivity {
     private void boot() {
         final BossServer bossServer = new BossServer();
         bossServer.fileUpSaveDir("d:\\tmp");
+        logger.error("===================");
         bossServer.receiveFile(new FileCallback() {
             @Override
             public void start(int id, String path, long size) {

@@ -2,6 +2,8 @@ package top.potens.jnet.broad.event;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.broad.listener.RoleChangeListener;
 import top.potens.jnet.broad.runnable.UDPRunnable;
 
@@ -17,6 +19,8 @@ import java.util.regex.Pattern;
  * send and receiver socket
  */
 public class BroadSocket {
+    private static final Logger logger = LoggerFactory.getLogger(BroadSocket.class);
+
     private static BroadSocket socket;
     private String host = "239.0.0.106";
     private int port = 31415;
