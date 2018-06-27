@@ -25,7 +25,6 @@ public class ForwardHandler extends SimpleChannelInboundHandler<HBinaryProtocol>
             ctx.fireChannelRead(protocol);
         }
         if (HBinaryProtocol.TYPE_FILE_APPLY == protocol.getType()) {
-            // logger.debug("channelId=" + ch.id().asShortText() + " file apply,receive:" + protocol.getReceive() + ",receiveId:" + protocol.getReceiveId());
             HBinaryProtocol applyHBinaryProtocol = HBinaryProtocol.buildSimpleText(protocol.getId(), protocol.getTextBody(), protocol.getReceive(), protocol.getReceiveId(), HBinaryProtocol.TYPE_FILE_AGREE);
             ctx.writeAndFlush(applyHBinaryProtocol);
         }

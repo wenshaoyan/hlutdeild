@@ -1,6 +1,8 @@
 package top.potens.jnet.bootstrap;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.event.EventSource;
 import top.potens.jnet.handler.*;
@@ -30,6 +32,8 @@ import java.util.concurrent.TimeUnit;
  * 主通信进程的client
  */
 public class BossClient {
+    private static final Logger logger = LoggerFactory.getLogger(BossClient.class);
+
     private int port;
     private String host;
     private FileHandler fileHandler;
@@ -37,6 +41,7 @@ public class BossClient {
     private RPCHandler mRPCHandler;
     private EventHandler mEventHandler;
     private EventSource eventSource;
+    private NioEventLoopGroup workerGroup;
     public BossClient() {
         this.eventSource = new EventSource();
     }
@@ -109,42 +114,34 @@ public class BossClient {
      */
     public void sendRPC(RPCHeader rpcHeader, RPCCallback rpcCallback) {
         mRPCHandler.sendRPC(rpcHeader, rpcCallback);
-
     }
-
-
-
-    public void start() {
-        //logger.debug("start: host=" + this.host + ",port=" + this.port);
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup();
-        try {
-            Bootstrap b = new Bootstrap();
-            b.group(workerGroup)
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY, true)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ChannelPipeline pipeline = ch.pipeline();
-                            fileHandler = new FileHandler(fileReceiveCallback);
-                            mRPCHandler = new RPCHandler();
-                            mEventHandler = new EventHandler(eventSource);
-                            pipeline.addLast("ping", new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
-                            pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
-                            pipeline.addLast("decoder", new HBinaryProtocolDecoder());
-                            pipeline.addLast("encoder", new HBinaryProtocolEncoder());
-                            pipeline.addLast("heart", new HeartBeatClientHandler());
-                            pipeline.addLast("file", fileHandler);
-                            pipeline.addLast("rpc", mRPCHandler);
-                            pipeline.addLast("event", mEventHandler);
-                            pipeline.addLast("business", new BossClientHandler());
-                        }
-                    });
-            ChannelFuture f = b.connect(this.host, this.port).sync();
-            f.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            workerGroup.shutdownGracefully();
-        }
+    public ChannelFuture start() {
+        workerGroup = new NioEventLoopGroup();
+        Bootstrap b = new Bootstrap();
+        b.group(workerGroup)
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        fileHandler = new FileHandler(fileReceiveCallback);
+                        mRPCHandler = new RPCHandler();
+                        mEventHandler = new EventHandler(eventSource);
+                        pipeline.addLast("ping", new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
+                        pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
+                        pipeline.addLast("decoder", new HBinaryProtocolDecoder());
+                        pipeline.addLast("encoder", new HBinaryProtocolEncoder());
+                        pipeline.addLast("heart", new HeartBeatClientHandler());
+                        pipeline.addLast("file", fileHandler);
+                        pipeline.addLast("rpc", mRPCHandler);
+                        pipeline.addLast("event", mEventHandler);
+                        pipeline.addLast("business", new BossClientHandler());
+                    }
+                });
+        return b.connect(this.host, this.port);
+    }
+    // 释放资源
+    public void release(){
+        workerGroup.shutdownGracefully();
     }
 }

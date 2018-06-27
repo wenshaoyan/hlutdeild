@@ -1,5 +1,6 @@
 package top.potens.jnet;
 
+import io.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.potens.jnet.bootstrap.BossServer;
@@ -15,42 +16,43 @@ public class TestBoosServer {
     private static final Logger logger = LoggerFactory.getLogger(TestBoosClient.class);
 
     public static void main(String[] args) {
-        // Logger.addLogAdapter(new AndroidLogAdapter());
         final BossServer bossServer = new BossServer();
-        bossServer.fileUpSaveDir("d:\\tmp");
-        bossServer.setRPCReqListener(new RPCHandler());
-        bossServer.receiveFile(new FileCallback() {
-            @Override
-            public void start(int id, String path, long size) {
+        ChannelFuture channelFuture = bossServer.fileUpSaveDir("d:\\tmp").
+                setRPCReqListener(new RPCHandler()).
+                receiveFile(new FileCallback() {
+                    @Override
+                    public void start(int id, String path, long size) {
+                        logger.info("r:start:id" + id + ",path:" + path);
+                    }
 
-                System.out.println("r:start:id" + id + ",path:" + path);
-            }
-            @Override
-            public void process(int id, long size, long process) {
-                System.out.println("r:process:id:" + id + ",size:" + size + ",process:" + process);
-            }
+                    @Override
+                    public void process(int id, long size, long process) {
+                        logger.info("r:process:id:" + id + ",size:" + size + ",process:" + process);
+                    }
 
-            @Override
-            public void end(int id, long size) {
-                System.out.println("r:end:id:" + id + ",size:" + size);
-            }
-        });
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                bossServer.listenerPort(31416).start();
-            }
-        }).start();
+                    @Override
+                    public void end(int id, long size) {
+                        logger.info("r:end:id:" + id + ",size:" + size);
+                    }
+                }).start();
         try {
-            Thread.sleep(10000);
+            channelFuture.sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            return;
         }
+        logger.debug("BoosServer start suc, port=" + bossServer.getPort());
         bossServer.broadcastEvent("onMessage", "111111111");
-        logger.debug("-=");
+
+
+        try {
+            channelFuture.channel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            bossServer.release();
+        }
     }
-    public void a(){
-    }
+
 
 }
