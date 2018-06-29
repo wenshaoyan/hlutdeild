@@ -1,42 +1,45 @@
-package top.potens.jnet.broad;
+package top.potens.jnet;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.broad.event.BroadSocket;
 import top.potens.jnet.broad.listener.RoleChangeListener;
 
 /**
  * Created by wenshao on 2018/5/23.
  */
-public class Main {
+public class TestBroad {
+    private static final Logger logger = LoggerFactory.getLogger(TestBroad.class);
+
     public static void main(String[] args) {
         BroadSocket socket = BroadSocket.getInstance();
         socket.setRoleChangeListener(new RoleChangeListener() {
             @Override
             public void onWorkToClient() {
-                System.out.println("onWorkToClient");
+                logger.debug("onWorkToClient");
             }
 
             @Override
             public void onWorkToServer() {
-                System.out.println("onWorkToServer");
+                logger.debug("onWorkToServer");
 
             }
 
             @Override
             public void onClientToWork() {
-                System.out.println("onClientToWork");
+                logger.debug("onClientToWork");
 
             }
 
             @Override
             public void onServerToClient() {
-                System.out.println("onServerToClient");
+                logger.debug("onServerToClient");
 
             }
 
             @Override
             public void onClientToServer() {
-                System.out.println("onClientToServer");
+                logger.debug("onClientToServer");
             }
 
         });
@@ -51,11 +54,11 @@ public class Main {
                 socket.disposeClientExit("2");
             }*/
             if (socket.getRole() == RoleChangeListener.ROLE_CLIENT) {
-                System.out.println("=================voteServerDisconnect start");
+                logger.debug("voteServerDisconnect start");
                 socket.voteServerDisconnect();
             }
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("sleep:", e);
         }
 
     }

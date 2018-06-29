@@ -1,6 +1,8 @@
 package top.potens.jnet.broad.event;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.broad.listener.RoleChangeListener;
 
 import java.util.Collections;
@@ -11,10 +13,10 @@ import java.util.List;
  * client监听的事件
  */
 public class ClientReceiveEvent extends ReceiveBasicEvent {
-
+    private static final Logger logger = LoggerFactory.getLogger(ClientReceiveEvent.class);
     @Override
     protected void onClientExit(String message) {
-        System.out.println("onClientExit: " + message);
+        logger.debug("onClientExit: " + message);
     }
 
     @Override
@@ -23,7 +25,7 @@ public class ClientReceiveEvent extends ReceiveBasicEvent {
         List<String> roleChainList = BroadSocket.getInstance().getRoleChainList();
         roleChainList.clear();
         Collections.addAll(roleChainList, split);
-        System.out.println("同步成功:" + roleChainList.toString());
+        logger.debug("同步成功:" + roleChainList.toString());
     }
 
     @Override

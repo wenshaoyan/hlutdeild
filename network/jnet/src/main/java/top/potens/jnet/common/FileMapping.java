@@ -1,6 +1,8 @@
 package top.potens.jnet.common;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.listener.FileCallback;
 
 import java.io.File;
@@ -14,7 +16,8 @@ import java.util.Map;
  * 保存message id 和文件的对应关系
  */
 public class FileMapping {
-    private String dir = "d:\\tmp";
+    private static final Logger logger = LoggerFactory.getLogger(FileMapping.class);
+    private String dir;
     private Map<Integer, Mapping> mapData = new HashMap<Integer, Mapping>();
 
     private FileMapping() {
@@ -29,6 +32,7 @@ public class FileMapping {
         }
         return fileMapping;
     }
+
     // 设置目录
     public void setDir(String dir) {
         this.dir = dir;
@@ -76,12 +80,12 @@ public class FileMapping {
             mapping.addWriteSize(data.length);
             fileReceiveCallback.process(id, mapping.toolSize, seek);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("io:", e);
         } finally {
             try {
                 if (rf != null) rf.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("file close", e);
             }
             // 写入完成
             if (mapping.getToolSize() == mapping.writeSize) {

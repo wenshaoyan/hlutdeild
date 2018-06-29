@@ -84,42 +84,6 @@ public class IndexActivity extends AppCompatActivity {
         mContext = getApplicationContext();
         elv_user_list = findViewById(R.id.elv_user_list);
         mHandler.post(sRunnable);
-//        final BossClient bossClient = new BossClient();
-        boot();
-
-    }
-    private void boot() {
-        final BossServer bossServer = new BossServer();
-        bossServer.fileUpSaveDir("d:\\tmp");
-        logger.error("===================");
-        bossServer.receiveFile(new FileCallback() {
-            @Override
-            public void start(int id, String path, long size) {
-
-                System.out.println("r:start:id" + id + ",path:" + path);
-            }
-            @Override
-            public void process(int id, long size, long process) {
-                System.out.println("r:process:id:" + id + ",size:" + size + ",process:" + process);
-            }
-
-            @Override
-            public void end(int id, long size) {
-                System.out.println("r:end:id:" + id + ",size:" + size);
-            }
-        });
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                bossServer.listenerPort(31416).start();
-            }
-        }).start();
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
 }

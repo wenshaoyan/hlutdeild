@@ -41,7 +41,7 @@ public class BroadSocket {
         Random random = new Random();
         int i = random.nextInt(100);
         PERF_TIME += i;
-        System.out.println("PERF_TIME = " + PERF_TIME);
+        logger.debug("PERF_TIME = " + PERF_TIME);
     }
 
     // 内网ip string
@@ -51,12 +51,10 @@ public class BroadSocket {
 
     static {
         try {
-            // localIp = InetAddress.getLocalHost().getHostAddress();
-//             localIp = String.valueOf(new Date().getTime());
-            localIp = "3";
+            localIp = InetAddress.getLocalHost().getHostAddress();
             localIpByte = localIp.getBytes();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("get local ip error: ", e);
         }
     }
 
@@ -71,6 +69,7 @@ public class BroadSocket {
     private RoleChangeListener roleChangeListener;
 
     private BroadSocket() {
+        logger.debug(getLocalIp());
         initSocket();
     }
 
@@ -158,7 +157,7 @@ public class BroadSocket {
             // 发送加入事件
             sendJoinEvent();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("init socket error:", e);
         }
     }
     // start 角色决定定时器
@@ -196,7 +195,7 @@ public class BroadSocket {
             DatagramPacket dataPacket = new DatagramPacket(data, data.length, getInetAddress(), getPort());
             getMus().send(dataPacket);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("broad send", e);
         }
     }
 

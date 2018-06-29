@@ -42,8 +42,16 @@ public class BossClient {
     private EventHandler mEventHandler;
     private EventSource eventSource;
     private NioEventLoopGroup workerGroup;
+    private String fileUpSaveDir;
     public BossClient() {
+        initDefault();
         this.eventSource = new EventSource();
+    }
+    private void initDefault() {
+        this.fileUpSaveDir = "/d/tmp";
+    }
+    public String getFileUpSaveDir() {
+        return fileUpSaveDir;
     }
     // Fluent风格api=====================================
 
@@ -79,7 +87,16 @@ public class BossClient {
         this.eventSource.addListener(eventListener);
         return this;
     }
-
+    /**
+     * 设置文件上传保存路径
+     *
+     * @param dir 目录
+     * @return this
+     */
+    public BossClient fileUpSaveDir(String dir) {
+        this.fileUpSaveDir = dir;
+        return this;
+    }
     // ===========
 
     /**
