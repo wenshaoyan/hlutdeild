@@ -43,6 +43,7 @@ public class JnetService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
         final BroadSocket socket = BroadSocket.getInstance();
         socket.setRoleChangeListener(new RoleChangeListener() {
             @Override

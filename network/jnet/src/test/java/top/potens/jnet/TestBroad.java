@@ -12,6 +12,7 @@ public class TestBroad {
     private static final Logger logger = LoggerFactory.getLogger(TestBroad.class);
 
     public static void main(String[] args) {
+        BroadSocket.setLocalIp("127.0.0.1");
         BroadSocket socket = BroadSocket.getInstance();
         socket.setRoleChangeListener(new RoleChangeListener() {
             @Override

@@ -28,6 +28,17 @@ public class BroadSocket {
     private MulticastSocket mus;
     private ReceiveBasicEvent receiveBasicEvent;
     private static int PERF_TIME = 1000;        // 性能时间
+    private static String localIp;
+    private static byte[] localIpByte;
+
+    public String getLocalIp() {
+        return localIp;
+    }
+
+    public static void setLocalIp(String _localIp) {
+        localIpByte= _localIp.getBytes();
+        localIp = _localIp;
+    }
 
     static {
         Properties props = System.getProperties();
@@ -42,20 +53,6 @@ public class BroadSocket {
         int i = random.nextInt(100);
         PERF_TIME += i;
         logger.debug("PERF_TIME = " + PERF_TIME);
-    }
-
-    // 内网ip string
-    private static String localIp = null;
-    // 内网ip byte
-    private static byte[] localIpByte = null;
-
-    static {
-        try {
-            localIp = InetAddress.getLocalHost().getHostAddress();
-            localIpByte = localIp.getBytes();
-        } catch (Exception e) {
-            logger.error("get local ip error: ", e);
-        }
     }
 
     // 当前的角色
@@ -94,9 +91,6 @@ public class BroadSocket {
         return mus;
     }
 
-    public static String getLocalIp() {
-        return localIp;
-    }
 
     // 设置回复监听
     private void setReceiveListener(ReceiveBasicEvent e) {
