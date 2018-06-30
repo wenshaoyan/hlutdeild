@@ -4,6 +4,7 @@ package top.potens.jnet.broad.event;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.potens.jnet.broad.listener.BroadEventListener;
 import top.potens.jnet.broad.listener.RoleChangeListener;
 import top.potens.jnet.broad.runnable.UDPRunnable;
 
@@ -26,10 +27,11 @@ public class BroadSocket {
     private int port = 31415;
     private InetAddress inetAddress;
     private MulticastSocket mus;
-    private ReceiveBasicEvent receiveBasicEvent;
+    private ReceiveBasicBroadEvent receiveBasicEvent;
     private static int PERF_TIME = 1000;        // 性能时间
     private static String localIp;
     private static byte[] localIpByte;
+    private String serverIp;
 
     public String getLocalIp() {
         return localIp;
@@ -40,14 +42,25 @@ public class BroadSocket {
         localIp = _localIp;
     }
 
+    public String getServerIp() {
+        return serverIp;
+    }
+
+    public void setServerIp(String serverIp) {
+        this.serverIp = serverIp;
+    }
+
     static {
         Properties props = System.getProperties();
         String systemName = props.getProperty("os.name").toLowerCase();
         String systemWindowRe = ".*window.*";
+        String systemLinuxRe = ".*linux.*"; // android
 
-        // window +250  android + 500 linux +50
+        // window +250  android + 500  linux + 50
         if (Pattern.matches(systemWindowRe, systemName)) {
             PERF_TIME += 200;
+        } else if(Pattern.matches(systemLinuxRe, systemName)) {
+            PERF_TIME += 500;
         }
         Random random = new Random();
         int i = random.nextInt(100);
@@ -93,7 +106,7 @@ public class BroadSocket {
 
 
     // 设置回复监听
-    private void setReceiveListener(ReceiveBasicEvent e) {
+    private void setReceiveListener(ReceiveBasicBroadEvent e) {
         this.receiveBasicEvent = e;
     }
 
@@ -118,24 +131,25 @@ public class BroadSocket {
 
     public void setRole(byte role) {
         if (this.getRole() == RoleChangeListener.ROLE_WORK && role == RoleChangeListener.ROlE_SERVER) {   // work -> server
-            this.roleChangeListener.onWorkToServer();
+
             workStatusTimer.cancel();
-            setReceiveListener(new ServerReceiveEvent());
+            setReceiveListener(new ServerReceiveBroadEvent());
             sendServerAddress();
             roleChainList.clear();
             roleChainList.add(localIp);
+            this.roleChangeListener.onWorkToServer();
         } else if (this.getRole() == RoleChangeListener.ROLE_WORK && role == RoleChangeListener.ROLE_CLIENT) {    // work -> client
-            this.roleChangeListener.onWorkToClient();
             workStatusTimer.cancel();
-            setReceiveListener(new ClientReceiveEvent());
+            setReceiveListener(new ClientReceiveBroadEvent());
+            this.roleChangeListener.onWorkToClient();
         } else if (this.getRole() == RoleChangeListener.ROLE_CLIENT && role == RoleChangeListener.ROlE_SERVER) {    // client -> server
+            setReceiveListener(new ServerReceiveBroadEvent());
             this.roleChangeListener.onClientToServer();
-            setReceiveListener(new ServerReceiveEvent());
         } else if ((this.getRole() == RoleChangeListener.ROLE_CLIENT || this.getRole() == RoleChangeListener.ROlE_SERVER )&& role == RoleChangeListener.ROLE_WORK) {      // client or server -> work
-            this.roleChangeListener.onClientToWork();
-            setReceiveListener(new WorkReceiveEvent());
+            setReceiveListener(new WorkReceiveBroadEvent());
             startRoleDecisionTimer();
             roleChainList.clear();
+            this.roleChangeListener.onClientToWork();
         }
         this.role = role;
     }
@@ -165,14 +179,14 @@ public class BroadSocket {
                 setRole(RoleChangeListener.ROlE_SERVER);
             }
         }, PERF_TIME);
-        setReceiveListener(new WorkReceiveEvent());
+        setReceiveListener(new WorkReceiveBroadEvent());
 
     }
 
     // role初始化
     private void initWorkRole() {
         startRoleDecisionTimer();
-        new Thread(new UDPRunnable(this.mus, new top.potens.jnet.broad.listener.EventListener() {
+        new Thread(new UDPRunnable(this.mus, new BroadEventListener() {
             @Override
             public void onMessage(byte[] bytes) {
                 receiveBasicEvent.onMessage(bytes);
@@ -183,7 +197,7 @@ public class BroadSocket {
     // 统一发送出口
     private void send(byte event, byte[] bytes) {
         try {
-            byte[] data = new byte[top.potens.jnet.broad.listener.EventListener.MESSAGE_TOOL_BYTE];
+            byte[] data = new byte[BroadEventListener.MESSAGE_TOOL_BYTE];
             data[0] = event;
             System.arraycopy(bytes, 0, data, 1, bytes.length);
             DatagramPacket dataPacket = new DatagramPacket(data, data.length, getInetAddress(), getPort());
@@ -195,12 +209,12 @@ public class BroadSocket {
 
     // 发送加入事件
     public void sendJoinEvent() {
-        send(top.potens.jnet.broad.listener.EventListener.EVENT_W_JOIN, localIpByte);
+        send(BroadEventListener.EVENT_W_JOIN, localIpByte);
     }
 
     // 由server发出的 server的地址
     public void sendServerAddress() {
-        send(top.potens.jnet.broad.listener.EventListener.EVENT_S_MANAGE_ADDRESS, localIpByte);
+        send(BroadEventListener.EVENT_S_MANAGE_ADDRESS, localIpByte);
     }
 
     // 由server发出 角色链
@@ -215,24 +229,24 @@ public class BroadSocket {
             ips = ips.substring(0, ips.length() - 1);
         }
         byte[] bytes = ips.getBytes();
-        send(top.potens.jnet.broad.listener.EventListener.EVENT_S_SYNC_ROLE_CHAIN, bytes);
+        send(BroadEventListener.EVENT_S_SYNC_ROLE_CHAIN, bytes);
     }
 
     // 由server发出 有client退出
     public void sendClientExit(String ip) {
         byte[] bytes = ip.getBytes();
-        send(top.potens.jnet.broad.listener.EventListener.EVENT_S_CLIENT_EXIT, bytes);
+        send(BroadEventListener.EVENT_S_CLIENT_EXIT, bytes);
     }
 
     // 由client发出 连接server断开
     public void sendServerDisconnect() {
         byte[] bytes = new byte[]{1};
-        send(top.potens.jnet.broad.listener.EventListener.EVENT_C_SERVER_DISCONNECT, bytes);
+        send(BroadEventListener.EVENT_C_SERVER_DISCONNECT, bytes);
 
     }
     // 由client发出 同意加入
     public void sendConsentJoin() {
-        send(top.potens.jnet.broad.listener.EventListener.EVENT_C_CONSENT_JOIN, localIpByte);
+        send(BroadEventListener.EVENT_C_CONSENT_JOIN, localIpByte);
 
     }
 
@@ -247,6 +261,7 @@ public class BroadSocket {
     public void voteServerDisconnect() {
         sendServerDisconnect();
     }
+
 
 
 }

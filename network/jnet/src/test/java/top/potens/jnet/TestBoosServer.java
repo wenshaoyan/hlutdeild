@@ -17,8 +17,8 @@ public class TestBoosServer {
 
     public static void main(String[] args) {
         final BossServer bossServer = new BossServer();
-        ChannelFuture channelFuture = bossServer.fileUpSaveDir("d:\\tmp").
-                setRPCReqListener(new RPCHandler()).
+        ChannelFuture channelFuture = bossServer.fileUpSaveDir("d:\\tmp").listenerPort(31415)
+                .setRPCReqListener(new RPCHandler()).
                 receiveFile(new FileCallback() {
                     @Override
                     public void start(int id, String path, long size) {

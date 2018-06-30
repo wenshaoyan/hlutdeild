@@ -21,7 +21,7 @@ public class TestBoosClient {
         MyEventListener listener = new MyEventListener();
 
         final BossClient bossClient = new BossClient();
-        bossClient.connect("127.0.0.1", 31416).addServerEventListener(listener);
+        bossClient.connect("127.0.0.1", 31415).addServerEventListener(listener);
         ChannelFuture channelFuture = bossClient.receiveFile(new FileCallback() {
             @Override
             public void start(int id, String path, long size) {
@@ -38,12 +38,13 @@ public class TestBoosClient {
                 logger.info("r:end:id:" + id + ",size:" + size);
             }
         }).start();
+        // awaitUninterruptibly
         try {
             channelFuture.sync();
-        } catch (InterruptedException e) {
-            logger.error("client start fail", e);
-            return;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("a", "1");
         RPCHeader test = new RPCHeader("test", stringStringHashMap);

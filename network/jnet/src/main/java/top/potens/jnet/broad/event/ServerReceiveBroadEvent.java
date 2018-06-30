@@ -7,7 +7,7 @@ import top.potens.jnet.broad.listener.RoleChangeListener;
  * Created by wenshao on 2018/5/23.
  * server监听事件
  */
-public class ServerReceiveEvent extends ReceiveBasicEvent {
+public class ServerReceiveBroadEvent extends ReceiveBasicBroadEvent {
     @Override
     protected void onJoin(String message) {
         BroadSocket socket = BroadSocket.getInstance();

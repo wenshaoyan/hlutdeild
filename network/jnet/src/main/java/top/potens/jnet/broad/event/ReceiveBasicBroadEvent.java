@@ -1,7 +1,7 @@
 package top.potens.jnet.broad.event;
 
 
-import top.potens.jnet.broad.listener.EventListener;
+import top.potens.jnet.broad.listener.BroadEventListener;
 
 import java.io.UnsupportedEncodingException;
 
@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
  * Created by wenshao on 2018/5/23.
  * 监听事件基类
  */
-public class ReceiveBasicEvent implements EventListener {
+public class ReceiveBasicBroadEvent implements BroadEventListener {
     private static final String DEFAULT_TEXT_CHARSET = "UTF-8";
     private String byteToString(byte[] bytes) {
         try {
@@ -37,22 +37,22 @@ public class ReceiveBasicEvent implements EventListener {
         String message = byteToString(data);
         // byte清空
         switch (e) {
-            case EventListener.EVENT_W_JOIN:
+            case BroadEventListener.EVENT_W_JOIN:
                 this.onJoin(message);
                 break;
-            case EventListener.EVENT_S_MANAGE_ADDRESS:
+            case BroadEventListener.EVENT_S_MANAGE_ADDRESS:
                 this.onServerAddress(message);
                 break;
-            case EventListener.EVENT_S_SYNC_ROLE_CHAIN:
+            case BroadEventListener.EVENT_S_SYNC_ROLE_CHAIN:
                 this.onSyncRoleChain(message);
                 break;
-            case EventListener.EVENT_S_CLIENT_EXIT:
+            case BroadEventListener.EVENT_S_CLIENT_EXIT:
                 this.onClientExit(message);
                 break;
-            case EventListener.EVENT_C_SERVER_DISCONNECT:
+            case BroadEventListener.EVENT_C_SERVER_DISCONNECT:
                 this.onServerDisconnect(message);
                 break;
-            case EventListener.EVENT_C_CONSENT_JOIN:
+            case BroadEventListener.EVENT_C_CONSENT_JOIN:
                 this.onConsentJoin(message);
                 break;
             default:

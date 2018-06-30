@@ -5,7 +5,7 @@ package top.potens.jnet.broad.listener;
  * Created by wenshao on 2018/5/23.
  * broad socket接受到消息
  */
-public interface EventListener {
+public interface BroadEventListener {
     // 每条消息总的大小
     public static final int MESSAGE_TOOL_BYTE = 1024 * 4;
     // work发出: 有work加入的事件

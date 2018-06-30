@@ -121,8 +121,8 @@ public class BossServer {
         return ChannelGroupHelper.sendAssign(HBinaryProtocol.buildEventAll(method, string), channelId);
     }
     public ChannelFuture start() {
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
 
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
@@ -150,6 +150,7 @@ public class BossServer {
     }
     // 释放资源
     public void release(){
+
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
     }

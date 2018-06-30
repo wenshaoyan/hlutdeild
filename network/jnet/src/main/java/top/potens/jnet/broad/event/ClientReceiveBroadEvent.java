@@ -12,8 +12,8 @@ import java.util.List;
  * Created by wenshao on 2018/5/23.
  * client监听的事件
  */
-public class ClientReceiveEvent extends ReceiveBasicEvent {
-    private static final Logger logger = LoggerFactory.getLogger(ClientReceiveEvent.class);
+public class ClientReceiveBroadEvent extends ReceiveBasicBroadEvent {
+    private static final Logger logger = LoggerFactory.getLogger(ClientReceiveBroadEvent.class);
     @Override
     protected void onClientExit(String message) {
         logger.debug("onClientExit: " + message);

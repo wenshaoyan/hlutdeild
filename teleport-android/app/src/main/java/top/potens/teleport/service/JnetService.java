@@ -21,6 +21,7 @@ import top.potens.jnet.listener.FileCallback;
 import top.potens.teleport.data.EventServiceData;
 import top.potens.teleport.data.RpcResponseData;
 import top.potens.teleport.util.FileUtil;
+import top.potens.teleport.util.NetworkUtil;
 
 /**
  * Created by wenshao on 2018/6/28.
@@ -28,61 +29,70 @@ import top.potens.teleport.util.FileUtil;
  */
 
 public class JnetService extends Service {
-    private static final int serverListenerPort = 31415;
     private static final Logger logger = LoggerFactory.getLogger(JnetService.class);
+    private static final int serverListenerPort = 31415;
+    private BossServer bossServer;
+    private BossClient bossClient;
 
-     // 绑定服务时才会调用
+    // 绑定服务时才会调用
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-     // 首次创建服务时，系统将调用此方法来执行一次性设置程序（在调用 onStartCommand() 或 onBind() 之前）。
-     // 如果服务已在运行，则不会调用此方法。该方法只被调用一次
+    // 首次创建服务时，系统将调用此方法来执行一次性设置程序（在调用 onStartCommand() 或 onBind() 之前）。
+    // 如果服务已在运行，则不会调用此方法。该方法只被调用一次
     @Override
     public void onCreate() {
         super.onCreate();
+        init();
+    }
 
-        final BroadSocket socket = BroadSocket.getInstance();
-        socket.setRoleChangeListener(new RoleChangeListener() {
+    private void init() {
+        BroadSocket.setLocalIp(NetworkUtil.getLocalIp(this.getApplicationContext()));
+        new Thread(new Runnable() {
             @Override
-            public void onWorkToClient() {
-                logger.debug("onWorkToClient");
-                List<String> roleChainList = socket.getRoleChainList();
-                startJnetBossClient(roleChainList.get(0));
+            public void run() {
+                final BroadSocket socket = BroadSocket.getInstance();
+                socket.setRoleChangeListener(new RoleChangeListener() {
+                    @Override
+                    public void onWorkToClient() {
+                        logger.debug("onWorkToClient");
+                        stopJnet();
+                        boolean isStart = startJnetBossClient(socket.getServerIp());
+                        if (!isStart) socket.sendServerDisconnect();
+
+                    }
+
+                    @Override
+                    public void onWorkToServer() {
+                        stopJnet();
+                        logger.debug("onWorkToServer");
+                        startJnetBossService();
+                        startJnetBossClient("127.0.0.1");
+                    }
+
+                    @Override
+                    public void onClientToWork() {
+                        stopJnet();
+                        logger.debug("onClientToWork");
+                    }
+
+                    @Override
+                    public void onServerToClient() {
+                        logger.debug("onServerToClient");
+
+                    }
+
+                    @Override
+                    public void onClientToServer() {
+                        logger.debug("onClientToServer");
+                    }
+
+                });
             }
-
-            @Override
-            public void onWorkToServer() {
-                logger.debug("onWorkToServer");
-                startJnetBossService();
-                logger.debug("no sync");
-                List<String> roleChainList = socket.getRoleChainList();
-                startJnetBossClient(roleChainList.get(0));
-            }
-
-            @Override
-            public void onClientToWork() {
-                logger.debug("onClientToWork");
-                List<String> roleChainList = socket.getRoleChainList();
-                startJnetBossClient(roleChainList.get(0));
-            }
-
-            @Override
-            public void onServerToClient() {
-                logger.debug("onServerToClient");
-
-            }
-
-              @Override
-            public void onClientToServer() {
-                logger.debug("onClientToServer");
-            }
-
-        });
-
-
+        }).start();
     }
 
     // 每次通过startService()方法启动Service时都会被回调。
@@ -97,28 +107,32 @@ public class JnetService extends Service {
         System.out.println("onDestroy invoke");
         super.onDestroy();
     }
+
     // 启动boss service
-    private void startJnetBossService() {
-        final BossServer bossServer = new BossServer();
+    private boolean startJnetBossService() {
+        bossServer = new BossServer();
         ChannelFuture channelFuture = bossServer.listenerPort(serverListenerPort).setRPCReqListener(new RpcResponseData()).start();
         try {
             channelFuture.sync();
+            logger.debug("BoosServer start suc, port=" + bossServer.getPort());
+            return true;
         } catch (InterruptedException e) {
-            logger.error("");
-        }
-        logger.debug("BoosServer start suc, port=" + bossServer.getPort());
-        try {
-            channelFuture.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            bossServer.release();
+            logger.error("startJnetBossService:", e);
+            return false;
         }
     }
+
+    private void stopJnetBossService() {
+        if (bossServer != null) {
+            bossServer.release();
+            bossServer = null;
+        }
+    }
+
     // 启动boss client
-    private void startJnetBossClient(String host) {
+    private boolean startJnetBossClient(String host) {
         EventServiceData listener = new EventServiceData();
-        final BossClient bossClient = new BossClient();
+        bossClient = new BossClient();
         bossClient.connect(host, serverListenerPort).addServerEventListener(listener);
         ChannelFuture channelFuture = bossClient.fileUpSaveDir(FileUtil.getFile()).receiveFile(new FileCallback() {
             @Override
@@ -138,15 +152,21 @@ public class JnetService extends Service {
         }).start();
         try {
             channelFuture.sync();
-        } catch (InterruptedException e) {
+            return true;
+        } catch (Exception e) {
             logger.error("client start fail", e);
-        }
-        try {
-            channelFuture.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            bossClient.release();
+            return false;
         }
     }
+    private void stopJnetBossClient(){
+        if (bossClient != null) {
+            bossClient.release();
+            bossClient = null;
+        }
+    }
+    private void stopJnet() {
+        stopJnetBossClient();
+        stopJnetBossService();
+    }
+
 }
