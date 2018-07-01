@@ -13,10 +13,20 @@ import java.util.Map;
  */
 
 public class EventServiceData implements EventListener {
-    public void onMessage(EventObject e, String args) {
-        System.out.println(args);
+    // 新的client加入事件
+    public void onClientJoin(EventObject e, String jsonString) {
+        // System.out.println(args);
     }
-    public void onClientSync(EventObject e, String jsonString) {
+    // client退出事件
+    public void onClientExit(EventObject e, String jsonString) {
+
+    }
+    // 组内有新的client加入事件
+    public void onGroupClientJoin(EventObject e, String jsonString) {
+        // System.out.println(args);
+    }
+    // 组内有client退出事件
+    public void onGroupClientExit(EventObject e, String jsonString) {
 
     }
 

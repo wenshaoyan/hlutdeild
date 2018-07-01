@@ -44,7 +44,7 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel ch = ctx.channel();
-        ChannelGroupHelper.remove(ch);
+        ChannelGroupHelper.remove(ch.id().asShortText());
         logger.debug("channelInactive:channelId=" + ch.id().asShortText() + " ip:" + ch.remoteAddress() + " close");
     }
 
@@ -66,10 +66,10 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
                 try {
                     RPCHeader rpcHeader = gson.fromJson(textBody, RPCHeader.class);
                     String method = rpcHeader.getMethod();
-                    Method m = aClass.getMethod(method, Map.class);
+                    Method m = aClass.getMethod(method, String.class,Map.class);
                     Class<?> returnType = m.getReturnType();
                     if (returnType == String.class) {
-                        Object o = m.invoke(this.mRPCReqHandlerListener, rpcHeader.getBody());
+                        Object o = m.invoke(this.mRPCReqHandlerListener, ch.id().asShortText(), rpcHeader.getBody());
                         HBinaryProtocol protocolRes = HBinaryProtocol.buildReqToRes(protocol, (String) o);
                         ctx.writeAndFlush(protocolRes);
                     } else {

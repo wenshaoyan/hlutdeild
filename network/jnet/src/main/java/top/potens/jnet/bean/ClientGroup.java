@@ -14,7 +14,9 @@ public class ClientGroup {
     // 组的所有client
     private List<Client> clients;
 
-
+    public ClientGroup(String id) {
+        this.id = id;
+    }
     public ClientGroup(String id, String name, List<Client> clients) {
         this.id = id;
         this.name = name;

@@ -1,7 +1,5 @@
 package top.potens.jnet.bean;
 
-import java.net.InetAddress;
-
 /**
  * Created by wenshao on 2018/6/19.
  * 客户端
@@ -13,21 +11,19 @@ public class Client {
     private String address;
     // 头像
     private String image;
-    // MAC地址
-    private String mac;
-    // 设备名称
-    private String device;
+    // 展示名称 如果设置deviceName则获取deviceName 否则获取deviceModel
+    private String showName;
+    // 设备型号
+    private String deviceModel;
+    // 设备名称 设备可自定义
+    private String deviceName;
+
+    public Client() {
+    }
 
     public Client(String channelId, String address) {
         this.channelId = channelId;
         this.address = address;
-    }
-    public Client(String channelId, String address, String image, String mac, String device) {
-        this.channelId = channelId;
-        this.address = address;
-        this.image = image;
-        this.mac = mac;
-        this.device = device;
     }
 
     public String getChannelId() {
@@ -54,30 +50,41 @@ public class Client {
         this.image = image;
     }
 
-    public String getMac() {
-        return mac;
+    public String getShowName() {
+        return showName;
     }
 
-    public void setMac(String mac) {
-        this.mac = mac;
+    public void setShowName(String showName) {
+        this.showName = showName;
     }
 
-    public String getDevice() {
-        return device;
+    public String getDeviceModel() {
+        return deviceModel;
     }
 
-    public void setDevice(String device) {
-        this.device = device;
+    public void setDeviceModel(String deviceModel) {
+        if (showName == null) this.showName = deviceModel;
+        this.deviceModel = deviceModel;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
+        this.showName = deviceName;
     }
 
     @Override
     public String toString() {
         return "Client{" +
                 "channelId='" + channelId + '\'' +
-                ", address=" + address +
+                ", address='" + address + '\'' +
                 ", image='" + image + '\'' +
-                ", mac='" + mac + '\'' +
-                ", device='" + device + '\'' +
+                ", showName='" + showName + '\'' +
+                ", deviceModel='" + deviceModel + '\'' +
+                ", deviceName='" + deviceName + '\'' +
                 '}';
     }
 }

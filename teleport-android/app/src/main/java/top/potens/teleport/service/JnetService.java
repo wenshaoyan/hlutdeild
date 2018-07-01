@@ -10,16 +10,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 
 import io.netty.channel.ChannelFuture;
+import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.bootstrap.BossClient;
 import top.potens.jnet.bootstrap.BossServer;
 import top.potens.jnet.broad.event.BroadSocket;
 import top.potens.jnet.broad.listener.RoleChangeListener;
 import top.potens.jnet.listener.FileCallback;
+import top.potens.jnet.listener.RPCCallback;
 import top.potens.teleport.data.EventServiceData;
 import top.potens.teleport.data.RpcResponseData;
+import top.potens.teleport.util.DeviceUtil;
 import top.potens.teleport.util.FileUtil;
 import top.potens.teleport.util.NetworkUtil;
 
@@ -134,6 +138,7 @@ public class JnetService extends Service {
         EventServiceData listener = new EventServiceData();
         bossClient = new BossClient();
         bossClient.connect(host, serverListenerPort).addServerEventListener(listener);
+
         ChannelFuture channelFuture = bossClient.fileUpSaveDir(FileUtil.getFile()).receiveFile(new FileCallback() {
             @Override
             public void start(int id, String path, long size) {
@@ -152,11 +157,30 @@ public class JnetService extends Service {
         }).start();
         try {
             channelFuture.sync();
+            sendDeviceInfo();
             return true;
         } catch (Exception e) {
             logger.error("client start fail", e);
             return false;
         }
+    }
+    // 发送设备的相关信息
+    private  void sendDeviceInfo() {
+        HashMap<String, String> stringStringHashMap = new HashMap<>();
+        stringStringHashMap.put("model", DeviceUtil.getDeviceModel());
+        stringStringHashMap.put("name", DeviceUtil.getDeviceName());
+        RPCHeader initDeviceInfo = new RPCHeader("initDeviceInfo", stringStringHashMap);
+        bossClient.sendRPC(initDeviceInfo, new RPCCallback<String>() {
+            @Override
+            public void succeed(String result) {
+                logger.info("sendDeviceInfo:"+ result);
+            }
+
+            @Override
+            public void error(String error) {
+                logger.error("sendDeviceInfo:"+ error);
+            }
+        });
     }
     private void stopJnetBossClient(){
         if (bossClient != null) {

@@ -16,13 +16,12 @@ import java.lang.ref.WeakReference;
 import java.net.MulticastSocket;
 import java.util.List;
 
-import top.potens.jnet.bootstrap.BossServer;
-import top.potens.jnet.listener.FileCallback;
 import top.potens.teleport.R;
 import top.potens.teleport.adapter.FriendAdapter;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.constant.HandlerCode;
 import top.potens.teleport.data.FriendData;
+import top.potens.teleport.util.DeviceUtil;
 
 /**
  * Created by wenshao on 2018/4/29.

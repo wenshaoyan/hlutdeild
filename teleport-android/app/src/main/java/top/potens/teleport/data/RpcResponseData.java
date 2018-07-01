@@ -1,5 +1,6 @@
 package top.potens.teleport.data;
 
+import top.potens.jnet.helper.ChannelGroupHelper;
 import top.potens.jnet.listener.RPCReqHandlerListener;
 
 import java.util.Map;
@@ -9,7 +10,11 @@ import java.util.Map;
  * service监听到 client的rpc请求的响应
  */
 public class RpcResponseData implements RPCReqHandlerListener {
-    public String test(Map<String, String> args) {
-        return "111aaa";
+    // 同步设备信息
+    public String initDeviceInfo(String channelId, Map<String, String> args) {
+        String model = args.get("model");
+        String name = args.get("name");
+        ChannelGroupHelper.
+        return "ok";
     }
 }
