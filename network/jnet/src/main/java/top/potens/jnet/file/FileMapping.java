@@ -56,7 +56,7 @@ public class FileMapping {
                 mapping.addWriteSize(data.length);
                 System.out.println("=====写入中"+mapping.writeSize+"=="+mapping.toolSize+ "======="+ mapping.getCount());
             } catch (IOException e) {
-                e.printStackTrace();
+
             } finally {
                 /*try {
                     if (rf != null)rf.close();
@@ -90,7 +90,7 @@ public class FileMapping {
                 try {
                     rf = new RandomAccessFile(this.localFile, "rw");
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    // e.printStackTrace();
                 }
 
             }

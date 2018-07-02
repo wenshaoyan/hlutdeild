@@ -38,7 +38,7 @@ public class TestBoosServer {
         try {
             channelFuture.sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("channel:", e);
             return;
         }
         logger.debug("BoosServer start suc, port=" + bossServer.getPort());
@@ -48,7 +48,7 @@ public class TestBoosServer {
         try {
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("channel:", e);
         } finally {
             bossServer.release();
         }

@@ -62,7 +62,7 @@ public class TestBoosClient {
         try {
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("channel:", e);
         } finally {
             bossClient.release();
         }

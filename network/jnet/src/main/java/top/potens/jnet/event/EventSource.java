@@ -1,5 +1,8 @@
 package top.potens.jnet.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -10,6 +13,8 @@ import java.util.*;
  */
 
 public class EventSource {
+    private static final Logger logger = LoggerFactory.getLogger(EventSource.class);
+
     private Vector<EventListener> listeners;
     public EventSource() {
         this.listeners = new Vector<>();
@@ -32,7 +37,7 @@ public class EventSource {
                 Method m = aClass.getMethod(method, EventObject.class, String.class);
                 m.invoke(listener, new EventServerInform(this), args);
             } catch (Exception e) {
-                // e.printStackTrace();
+                logger.error("invoke error:", e);
             }
         }
 

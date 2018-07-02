@@ -113,19 +113,19 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        logger.error("sleep:", e);
                     }
                 }
             }
             fileCallback.end(id, tool);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("io:", e);
         } finally {
             if (rf != null) {
                 try {
                     rf.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("file close", e);
                 }
             }
         }
