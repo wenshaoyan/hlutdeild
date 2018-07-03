@@ -26,6 +26,7 @@ import top.potens.teleport.data.RpcResponseData;
 import top.potens.teleport.util.DeviceUtil;
 import top.potens.teleport.util.FileUtil;
 import top.potens.teleport.util.NetworkUtil;
+import top.potens.teleport.util.XBossUtil;
 
 /**
  * Created by wenshao on 2018/6/28.
@@ -55,9 +56,9 @@ public class JnetService extends Service {
 
     private void init() {
         BroadSocket.setLocalIp(NetworkUtil.getLocalIp(this.getApplicationContext()));
-        new Thread(new Runnable() {
+        /*new Thread(new Runnable() {
             @Override
-            public void run() {
+            public void run() {*/
                 final BroadSocket socket = BroadSocket.getInstance();
                 socket.setRoleChangeListener(new RoleChangeListener() {
                     @Override
@@ -95,8 +96,8 @@ public class JnetService extends Service {
                     }
 
                 });
-            }
-        }).start();
+          //  }
+        //}).start();
     }
 
     // 每次通过startService()方法启动Service时都会被回调。
@@ -118,6 +119,7 @@ public class JnetService extends Service {
         ChannelFuture channelFuture = bossServer.listenerPort(serverListenerPort).setRPCReqListener(new RpcResponseData()).start();
         try {
             channelFuture.sync();
+            XBossUtil.bossServer = bossServer;
             logger.debug("BoosServer start suc, port=" + bossServer.getPort());
             return true;
         } catch (InterruptedException e) {
@@ -137,6 +139,7 @@ public class JnetService extends Service {
     private boolean startJnetBossClient(String host) {
         EventServiceData listener = new EventServiceData();
         bossClient = new BossClient();
+
         bossClient.connect(host, serverListenerPort).addServerEventListener(listener);
 
         ChannelFuture channelFuture = bossClient.fileUpSaveDir(FileUtil.getFile()).receiveFile(new FileCallback() {
@@ -157,6 +160,7 @@ public class JnetService extends Service {
         }).start();
         try {
             channelFuture.sync();
+            XBossUtil.bossClient = bossClient;
             sendDeviceInfo();
             return true;
         } catch (Exception e) {
@@ -169,7 +173,7 @@ public class JnetService extends Service {
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("model", DeviceUtil.getDeviceModel());
         stringStringHashMap.put("name", DeviceUtil.getDeviceName());
-        RPCHeader initDeviceInfo = new RPCHeader("initDeviceInfo", stringStringHashMap);
+        RPCHeader initDeviceInfo = new RPCHeader("_initDeviceInfo", stringStringHashMap);
         bossClient.sendRPC(initDeviceInfo, new RPCCallback<String>() {
             @Override
             public void succeed(String result) {

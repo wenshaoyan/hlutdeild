@@ -35,7 +35,6 @@ public class ChannelGroupHelper {
         Client client = new Client(channelId, address);
         allClient.put(channelId, client);
     }
-
     // 加入到某个组
     public static boolean join(String channelId, String groupId) {
         if ("__all".equals(groupId)) {
@@ -133,6 +132,21 @@ public class ChannelGroupHelper {
     // 指定组的client的个数
     public static int size(String groupId) {
         return groupMap.get(groupId).size();
-
+    }
+    // 按channelId 获取对应的client
+    public static Client getClient(String channelId) {
+        return allClient.get(channelId);
+    }
+    // 获取所有的client
+    public static List<Client> getClients() {
+        return new ArrayList<>(allClient.values());
+    }
+    // 按groupId 获取对应的client group对象
+    public static ClientGroup getClientGroup(String groupId) {
+        return allClientGroup.get(groupId);
+    }
+    // 获取所有的clientGroup
+    public static List<ClientGroup> getClientGroups() {
+        return new ArrayList<>(allClientGroup.values());
     }
 }

@@ -14,7 +14,11 @@ import top.potens.teleport.service.JnetService;
  */
 
 public class GlobalApplication extends Application {
-    private Context mContext;
+    private static Context mContext;
+
+    public static Context getAppContext() {
+        return mContext;
+    }
 
     @Override
     public void onCreate() {
@@ -23,6 +27,7 @@ public class GlobalApplication extends Application {
         mContext = getApplicationContext();
         startJnetService();
     }
+
 
     // 启动jnet服务
     private void startJnetService() {

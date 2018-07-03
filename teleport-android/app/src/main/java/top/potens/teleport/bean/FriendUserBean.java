@@ -10,27 +10,24 @@ import android.support.annotation.RawRes;
  * 好友用户对象
  */
 public class FriendUserBean {
-    private int id;
+    private String id;
     private String name;
 
     private int head;
-    private int fg_id;
 
     public FriendUserBean() {
     }
 
-    public FriendUserBean(int id, String name,  @RawRes @DrawableRes int head, int fg_id) {
+    public FriendUserBean(String id, String name,  @RawRes @DrawableRes int head) {
         this.id = id;
         this.name = name;
         this.head = head;
-        this.fg_id = fg_id;
     }
-
-    public int getId() {
+    public String  getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String  id) {
         this.id = id;
     }
 
@@ -50,11 +47,4 @@ public class FriendUserBean {
         this.head = head;
     }
 
-    public int getFg_id() {
-        return fg_id;
-    }
-
-    public void setFg_id(int fg_id) {
-        this.fg_id = fg_id;
-    }
 }

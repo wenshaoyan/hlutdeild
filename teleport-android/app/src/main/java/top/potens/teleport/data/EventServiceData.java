@@ -1,10 +1,11 @@
 package top.potens.teleport.data;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.EventListener;
 import java.util.EventObject;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by wenshao on 2018/6/23.
@@ -13,18 +14,24 @@ import java.util.Map;
  */
 
 public class EventServiceData implements EventListener {
+    private static final Logger logger = LoggerFactory.getLogger(EventServiceData.class);
+
     // 新的client加入事件
     public void onClientJoin(EventObject e, String jsonString) {
-        // System.out.println(args);
+
+        logger.debug("onClient:" + jsonString);
     }
+
     // client退出事件
     public void onClientExit(EventObject e, String jsonString) {
 
     }
+
     // 组内有新的client加入事件
     public void onGroupClientJoin(EventObject e, String jsonString) {
         // System.out.println(args);
     }
+
     // 组内有client退出事件
     public void onGroupClientExit(EventObject e, String jsonString) {
 

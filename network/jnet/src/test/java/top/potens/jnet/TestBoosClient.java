@@ -3,12 +3,14 @@ package top.potens.jnet;
 import io.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.potens.jnet.bean.Client;
 import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.bootstrap.BossClient;
 import top.potens.jnet.listener.FileCallback;
 import top.potens.jnet.listener.RPCCallback;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by wenshao on 2018/6/14.
@@ -48,10 +50,10 @@ public class TestBoosClient {
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("a", "1");
         RPCHeader test = new RPCHeader("test", stringStringHashMap);
-        bossClient.sendRPC(test, new RPCCallback<String>() {
+        bossClient.sendRPC(test, new RPCCallback<List<Client>>() {
             @Override
-            public void succeed(String o) {
-                logger.info(o);
+            public void succeed(List<Client> clients) {
+                logger.info(String.valueOf(clients));
             }
             @Override
             public void error(String error) {

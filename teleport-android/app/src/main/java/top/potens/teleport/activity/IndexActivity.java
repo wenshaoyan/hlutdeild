@@ -14,14 +14,21 @@ import org.slf4j.LoggerFactory;
 import java.lang.ref.WeakReference;
 
 import java.net.MulticastSocket;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import top.potens.jnet.bean.Client;
+import top.potens.jnet.bean.RPCHeader;
+import top.potens.jnet.listener.RPCCallback;
 import top.potens.teleport.R;
 import top.potens.teleport.adapter.FriendAdapter;
 import top.potens.teleport.bean.FriendGroupBean;
+import top.potens.teleport.bean.FriendUserBean;
 import top.potens.teleport.constant.HandlerCode;
 import top.potens.teleport.data.FriendData;
 import top.potens.teleport.util.DeviceUtil;
+import top.potens.teleport.util.XBossUtil;
 
 /**
  * Created by wenshao on 2018/4/29.
@@ -43,8 +50,27 @@ public class IndexActivity extends AppCompatActivity {
     private final Runnable sRunnable = new Runnable() {
         @Override
         public void run() {
-            mFriends = FriendData.getFriendGroupData();
-            mHandler.sendEmptyMessageDelayed(HandlerCode.LOCAL_QUERY_SUC, 10);
+
+            RPCHeader rpcHeader = new RPCHeader("getClients", new HashMap<String, String>());
+            XBossUtil.sendRPC(rpcHeader, new RPCCallback<String>() {
+                @Override
+                public void succeed(String clients) {
+                    List<FriendUserBean> intranetList = new ArrayList<>();
+                    logger.debug(clients);
+                    logger.debug("===============");
+//                    for (Client client : clients) {
+//                        new FriendUserBean(client.getChannelId(), client.getShowName(),R.mipmap.head3);
+//                    }
+                    mFriends = FriendData.getFixationFriendGroupData(intranetList);
+                    mHandler.sendEmptyMessage(HandlerCode.LOCAL_QUERY_SUC);
+                    logger.info("rpc suc");
+                }
+
+                @Override
+                public void error(String s) {
+                    logger.error("lalalallalalalal"+s);
+                }
+            });
 
         }
     };
@@ -69,7 +95,6 @@ public class IndexActivity extends AppCompatActivity {
                 if (msg.what == HandlerCode.LOCAL_QUERY_SUC) {
                     FriendAdapter friendAdapter = new FriendAdapter(activity.getApplication(), activity.mFriends);
                     activity.elv_user_list.setAdapter(friendAdapter);
-
                 }
 
             }
