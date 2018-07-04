@@ -41,13 +41,11 @@ public class XBossUtil {
 
         Runnable runnable = new Runnable() {
             public void run() {
-                logger.debug("111");
                 if (bossClient != null) {
                     Future future = futures.get(jobID);
                     if (future != null) future.cancel(true);
                     bossClient.sendRPC(rpcHeader, rpcCallback);
                     countDownLatch.countDown();
-                    logger.debug("222");
                 }
             }
         };
@@ -57,7 +55,6 @@ public class XBossUtil {
         futures.put(jobID, future);
         try {
             countDownLatch.await();
-            logger.debug("sendRPC suc");
         } catch (InterruptedException e) {
             logger.error("sendRPC error:", e);
         }

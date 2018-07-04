@@ -39,7 +39,7 @@ public class RPCHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
                 Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
                 Type type = actualTypeArguments[0];
                 String textBody = protocol.getTextBody();
-                if (TypeJudge.isStringClass((Class) type)) {
+                if (TypeJudge.isStringClass(type)) {
                     rpcCallback.succeed(textBody);
                     return;
                 }

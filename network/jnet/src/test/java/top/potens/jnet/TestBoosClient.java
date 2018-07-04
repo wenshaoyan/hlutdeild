@@ -50,9 +50,9 @@ public class TestBoosClient {
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("a", "1");
         RPCHeader test = new RPCHeader("test", stringStringHashMap);
-        bossClient.sendRPC(test, new RPCCallback<List<Client>>() {
+        bossClient.sendRPC(test, new RPCCallback<String>() {
             @Override
-            public void succeed(List<Client> clients) {
+            public void succeed(String clients) {
                 logger.info(String.valueOf(clients));
             }
             @Override

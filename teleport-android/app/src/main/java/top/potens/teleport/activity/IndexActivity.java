@@ -52,23 +52,21 @@ public class IndexActivity extends AppCompatActivity {
         public void run() {
 
             RPCHeader rpcHeader = new RPCHeader("getClients", new HashMap<String, String>());
-            XBossUtil.sendRPC(rpcHeader, new RPCCallback<String>() {
+            XBossUtil.sendRPC(rpcHeader, new RPCCallback<List<Client>>() {
                 @Override
-                public void succeed(String clients) {
+                public void succeed(List<Client> clients) {
                     List<FriendUserBean> intranetList = new ArrayList<>();
-                    logger.debug(clients);
-                    logger.debug("===============");
-//                    for (Client client : clients) {
-//                        new FriendUserBean(client.getChannelId(), client.getShowName(),R.mipmap.head3);
-//                    }
+                    for (Client client : clients) {
+                        FriendUserBean friendUserBean = new FriendUserBean(client.getChannelId(), client.getShowName(), R.mipmap.head3);
+                        intranetList.add(friendUserBean);
+                    }
                     mFriends = FriendData.getFixationFriendGroupData(intranetList);
                     mHandler.sendEmptyMessage(HandlerCode.LOCAL_QUERY_SUC);
-                    logger.info("rpc suc");
                 }
 
                 @Override
                 public void error(String s) {
-                    logger.error("lalalallalalalal"+s);
+                    logger.error("rpc error "+s);
                 }
             });
 

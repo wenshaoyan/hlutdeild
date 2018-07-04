@@ -1,5 +1,7 @@
 package top.potens.jnet.common;
 
+import java.lang.reflect.Type;
+
 /**
  * Created by wenshao on 2018/6/23.
  * 类型判断
@@ -18,15 +20,9 @@ package top.potens.jnet.common;
 public class TypeJudge {
 
     // 是否为基础类型的包装类
-    public static boolean isWrapClass(Class clazz) {
-        try {
-            return ((Class) clazz.getField("TYPE").get(null)).isPrimitive();
-        } catch (Exception e) {
-            return false;
-        }
-    }
+
     // 是否为String类型
-    public static boolean isStringClass(Class clazz) {
-        return clazz.getName().equals("java.lang.String");
+    public static boolean isStringClass(Type type) {
+        return type.toString().equals("class java.lang.String");
     }
 }
