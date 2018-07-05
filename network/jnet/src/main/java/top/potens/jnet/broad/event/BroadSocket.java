@@ -28,7 +28,7 @@ public class BroadSocket {
     private InetAddress inetAddress;
     private MulticastSocket mus;
     private ReceiveBasicBroadEvent receiveBasicEvent;
-    private static int PERF_TIME = 1000;        // 性能时间
+    private static int PERF_TIME = 1300;        // 性能时间
     private static String localIp;
     private static byte[] localIpByte;
     private String serverIp;
@@ -56,11 +56,11 @@ public class BroadSocket {
         String systemWindowRe = ".*window.*";
         String systemLinuxRe = ".*linux.*"; // android
 
-        // window +250  android + 500  linux + 50
+        // window +500  android + 1000  linux + 100
         if (Pattern.matches(systemWindowRe, systemName)) {
-            PERF_TIME += 200;
-        } else if(Pattern.matches(systemLinuxRe, systemName)) {
             PERF_TIME += 500;
+        } else if(Pattern.matches(systemLinuxRe, systemName)) {
+            PERF_TIME += 1000;
         }
         Random random = new Random();
         int i = random.nextInt(100);

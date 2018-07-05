@@ -56,9 +56,9 @@ public class JnetService extends Service {
 
     private void init() {
         BroadSocket.setLocalIp(NetworkUtil.getLocalIp(this.getApplicationContext()));
-        /*new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
-            public void run() {*/
+            public void run() {
                 final BroadSocket socket = BroadSocket.getInstance();
                 socket.setRoleChangeListener(new RoleChangeListener() {
                     @Override
@@ -96,8 +96,8 @@ public class JnetService extends Service {
                     }
 
                 });
-          //  }
-        //}).start();
+            }
+        }).start();
     }
 
     // 每次通过startService()方法启动Service时都会被回调。
@@ -168,30 +168,34 @@ public class JnetService extends Service {
             return false;
         }
     }
+
     // 发送设备的相关信息
-    private  void sendDeviceInfo() {
+    private void sendDeviceInfo() {
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("model", DeviceUtil.getDeviceModel());
         stringStringHashMap.put("name", DeviceUtil.getDeviceName());
         RPCHeader initDeviceInfo = new RPCHeader("_initDeviceInfo", stringStringHashMap);
+        logger.debug(stringStringHashMap.toString());
         bossClient.sendRPC(initDeviceInfo, new RPCCallback<String>() {
             @Override
             public void succeed(String result) {
-                logger.info("sendDeviceInfo:"+ result);
+                logger.info("sendDeviceInfo:" + result);
             }
 
             @Override
             public void error(String error) {
-                logger.error("sendDeviceInfo:"+ error);
+                logger.error("sendDeviceInfo:" + error);
             }
         });
     }
-    private void stopJnetBossClient(){
+
+    private void stopJnetBossClient() {
         if (bossClient != null) {
             bossClient.release();
             bossClient = null;
         }
     }
+
     private void stopJnet() {
         stopJnetBossClient();
         stopJnetBossService();
