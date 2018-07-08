@@ -3,8 +3,10 @@ package top.potens.jnet.handler;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.potens.jnet.bean.Client;
 import top.potens.jnet.bean.RPCHeader;
 import top.potens.jnet.event.EventServerInform;
+import top.potens.jnet.exception.ChannelHeartException;
 import top.potens.jnet.helper.ChannelGroupHelper;
 import top.potens.jnet.listener.RPCReqHandlerListener;
 import top.potens.jnet.protocol.HBinaryProtocol;
@@ -12,6 +14,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.EventObject;
 import java.util.Map;
@@ -43,9 +46,9 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
     // channel 断开后的事件
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Channel ch = ctx.channel();
-        ChannelGroupHelper.remove(ch.id().asShortText());
-        logger.debug("channelInactive:channelId=" + ch.id().asShortText() + " ip:" + ch.remoteAddress() + " close");
+        String logPrefix = "channelInactive:channelId=" + ctx.channel().id().asShortText() + ":";
+        logger.error(logPrefix + " initiative close");
+        clientClose(ctx.channel());
     }
 
 
@@ -66,7 +69,7 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
                 try {
                     RPCHeader rpcHeader = gson.fromJson(textBody, RPCHeader.class);
                     String method = rpcHeader.getMethod();
-                    Method m = aClass.getMethod(method, String.class,Map.class);
+                    Method m = aClass.getMethod(method, String.class, Map.class);
                     Class<?> returnType = m.getReturnType();
                     if (returnType == String.class) {
                         Object o = m.invoke(this.mRPCReqHandlerListener, ch.id().asShortText(), rpcHeader.getBody());
@@ -87,10 +90,25 @@ public class BossServerEndHandler extends SimpleChannelInboundHandler<HBinaryPro
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Channel ch = ctx.channel();
+        String logPrefix = "channelInactive:channelId=" + ctx.channel().id().asShortText() + ":";
+        if (cause instanceof IOException) {
+            logger.error(logPrefix + " exceptionCaught,will close socket:", cause);
+            clientClose(ctx.channel());
+        } else if (cause instanceof ChannelHeartException) { // 心跳异常
+            logger.error(logPrefix + " not heart,will close socket:", cause);
+            clientClose(ctx.channel());
+        } else {    // 业务异常
+            logger.error(logPrefix + " end exception:", cause);
+        }
+    }
+    public void clientClose(Channel ch) {
         String logPrefix = "channelInactive:channelId=" + ch.id().asShortText() + ":";
-        logger.error(logPrefix + " exceptionCaught,will close socket,", cause);
-        ctx.close();
+        String channelId = ch.id().asShortText();
+        Client client = ChannelGroupHelper.getClient(channelId);
+        ChannelGroupHelper.remove(channelId);
+        // 通知所有的client有新的client退出
+        ChannelGroupHelper.broadcast(HBinaryProtocol.buildEventAll("onClientExit", client.getAddress()));
+        ch.close();
     }
 
 }

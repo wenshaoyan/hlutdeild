@@ -20,13 +20,11 @@ import java.util.Map;
  *
  */
 public class RPCHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
-    private ChannelHandlerContext mCtx;
     private Gson gson = new Gson();
     private Map<Integer, RPCCallback> reqMap = new HashMap<>();
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        mCtx = ctx;
+    public void channelActive(ChannelHandlerContext ctx) {
         ctx.fireChannelActive();
     }
 
@@ -54,23 +52,7 @@ public class RPCHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
             ctx.fireChannelRead(protocol);
         }
     }
-    public void sendRPC(RPCHeader rpcHeader, RPCCallback rpcCallback) {
-        if (rpcHeader.getMethod()!= null){
-            String stringRPCHeader = gson.toJson(rpcHeader);
-            HBinaryProtocol protocol = HBinaryProtocol.buildReqRPC(stringRPCHeader);
-            System.out.println("===============");
-            System.out.println(mCtx);
-            System.out.println(stringRPCHeader);
-            System.out.println(protocol);
-            System.out.println("==================");
-
-
-            mCtx.writeAndFlush(protocol);
-            reqMap.put(protocol.getId(), rpcCallback);
-        } else {
-            if (rpcCallback!= null) {
-                rpcCallback.error("rpcHeader.method is null");
-            }
-        }
+    public void addReq(int id, RPCCallback rpcCallback) {
+        reqMap.put(id, rpcCallback);
     }
 }

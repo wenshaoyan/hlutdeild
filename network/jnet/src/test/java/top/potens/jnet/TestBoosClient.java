@@ -34,19 +34,16 @@ public class TestBoosClient {
             public void process(int id, long size, long process) {
                 logger.info("r:process:id:" + id + ",size:" + size + ",process:" + process);
             }
-
             @Override
             public void end(int id, long size) {
                 logger.info("r:end:id:" + id + ",size:" + size);
             }
         }).start();
-        // awaitUninterruptibly
         try {
             channelFuture.sync();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         HashMap<String, String> stringStringHashMap = new HashMap<>();
         stringStringHashMap.put("a", "1");
         RPCHeader test = new RPCHeader("test", stringStringHashMap);
@@ -61,34 +58,6 @@ public class TestBoosClient {
             }
         });
 
-        try {
-            channelFuture.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            logger.error("channel:", e);
-        } finally {
-            bossClient.release();
-        }
-        /*try {
-            bossClient.sendFile(new File("D:\\data\\build.zip"),HBinaryProtocol.RECEIVE_ASSIGN,"45bf74d2", new FileCallback() {
-//            bossClient.sendFile(new File("D:\\data\\build.zip"), HBinaryProtocol.RECEIVE_SERVER, null, new FileCallback() {
-                @Override
-                public void start(int id, String path, long size) {
-                    logger.info("s:start:id" + id + ",path:" + path);
-                }
-
-                @Override
-                public void process(int id, long size, long process) {
-                    logger.info("s:process:id:" + id + ",size:" + size + ",process:" + process);
-                }
-
-                @Override
-                public void end(int id, long size) {
-                    logger.info("s:end:id:" + id + ",size:" + size);
-                }
-            });
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }*/
 
     }
 }

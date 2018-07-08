@@ -1,5 +1,6 @@
 package top.potens.jnet.bootstrap;
 
+import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroupFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +12,6 @@ import top.potens.jnet.protocol.HBinaryProtocol;
 import top.potens.jnet.protocol.HBinaryProtocolDecoder;
 import top.potens.jnet.protocol.HBinaryProtocolEncoder;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -36,12 +33,20 @@ public class BossServer {
     private int port;
     // 文件接收保存的目录
     private String fileUpSaveDir;
-    private FileHandler fileHandler;
     private FileCallback fileReceiveCallback;
-    private BossServerEndHandler endHandler;
+    private BossServerEndHandler mEndHandler;
     private RPCReqHandlerListener rpcReqListener;
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
+
+    // channel
+    private Channel mChannel;
+
+    public enum BindStatus {
+        READY, BINDING, SUCCESS, CLOSE
+    }
+
+    private BindStatus bindStatus;
 
     public BossServer() {
         initDefault();
@@ -120,9 +125,11 @@ public class BossServer {
     public boolean assignEvent(String method, String string, String channelId) {
         return ChannelGroupHelper.sendAssign(HBinaryProtocol.buildEventAll(method, string), channelId);
     }
+
     public ChannelFuture start() {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
+        bindStatus = BindStatus.READY;
 
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
@@ -131,26 +138,46 @@ public class BossServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        fileHandler = new FileHandler(fileReceiveCallback, fileUpSaveDir);
-                        endHandler = new BossServerEndHandler(rpcReqListener);
                         pipeline.addLast("ping", new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));
                         pipeline.addLast("unpacking", new LengthFieldBasedFrameDecoder(HBinaryProtocol.MAX_LENGTH, 0, 4, 0, 4));
                         pipeline.addLast("decoder", new HBinaryProtocolDecoder());
                         pipeline.addLast("encoder", new HBinaryProtocolEncoder());
                         pipeline.addLast("heart", new HeartBeatServerHandler());
                         pipeline.addLast("forward", new ForwardHandler());
-                        //pipeline.addLast("file",fileHandler);
-                        // pipeline.addLast("rpc", new RPCHandler());
-                        pipeline.addLast("end", endHandler);
+                        pipeline.addLast("end", new BossServerEndHandler(rpcReqListener));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 100)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-        return b.bind();
-    }
-    // 释放资源
-    public void release(){
+        ChannelFuture bind = b.bind();
 
+        bindStatus = BindStatus.BINDING;
+        bind.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {   // 监听成功
+                    bindStatus = BindStatus.SUCCESS;
+                    mChannel = future.channel();
+                    ChannelPipeline pipeline = future.channel().pipeline();
+                    mEndHandler = (BossServerEndHandler) pipeline.get("end");
+
+                } else {    // 监听异常
+                    bindStatus = BindStatus.CLOSE;
+                }
+            }
+        });
+        ChannelFuture channelFuture = bind.channel().closeFuture();
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                bindStatus = BindStatus.CLOSE;
+            }
+        });
+        return bind;
+    }
+
+    // 释放资源
+    public void release() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
     }

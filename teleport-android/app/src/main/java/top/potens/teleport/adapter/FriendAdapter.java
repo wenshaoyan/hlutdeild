@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.DataSetObserver;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,7 +19,7 @@ import top.potens.teleport.image.GlideApp;
 /**
  * Created by wenshao on 2018/4/30.
  */
-public class FriendAdapter implements ExpandableListAdapter {
+public class FriendAdapter extends BaseExpandableListAdapter {
     private Context mContext;
     private List<FriendGroupBean> mFriends;
 
@@ -26,17 +27,10 @@ public class FriendAdapter implements ExpandableListAdapter {
     public FriendAdapter(Context context, List<FriendGroupBean> list) {
         mContext = context;
         mFriends = list;
-    }
-
-    @Override
-    public void registerDataSetObserver(DataSetObserver observer) {
 
     }
 
-    @Override
-    public void unregisterDataSetObserver(DataSetObserver observer) {
 
-    }
 
     @Override
     public int getGroupCount() {

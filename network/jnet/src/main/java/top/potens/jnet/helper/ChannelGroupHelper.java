@@ -116,6 +116,7 @@ public class ChannelGroupHelper {
                 break;
             }
         }
+        allClient.remove(channelId);
         return ALL_CHANNEL.remove(channel);
     }
 

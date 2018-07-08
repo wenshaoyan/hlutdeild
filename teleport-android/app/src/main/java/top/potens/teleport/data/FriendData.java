@@ -20,8 +20,8 @@ public class FriendData {
         FriendGroupBean groupIntranet = new FriendGroupBean("2","内网设备");
 
         ArrayList<FriendUserBean> sourceList = new ArrayList<>();
-        sourceList.add(new FriendUserBean("","我的共享", R.mipmap.head1));
-        sourceList.add(new FriendUserBean("","收到的共享",R.mipmap.head1));
+        sourceList.add(new FriendUserBean("","我的共享", R.mipmap.share));
+        sourceList.add(new FriendUserBean("","收到的共享",R.mipmap.share));
         groupSource.setFriendUserBeans(sourceList);
 
         groupIntranet.setFriendUserBeans(intranetList);

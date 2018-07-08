@@ -1,5 +1,7 @@
 package top.potens.jnet.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -12,7 +14,9 @@ import java.io.RandomAccessFile;
 /**
  * Created by wenshao on 2018/5/6.
  */
-public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
+public class BossClientEndHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
+    private static final Logger logger = LoggerFactory.getLogger(BossClientEndHandler.class);
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
 
@@ -25,15 +29,15 @@ public class BossClientHandler extends SimpleChannelInboundHandler<HBinaryProtoc
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final HBinaryProtocol protocol) throws Exception {
 
-        /*if (protocol.getType() == HBinaryProtocol.TYPE_RPC_REQ) {
-
-        }*/
 
 
     }
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
-        ctx.close();
+        if (cause instanceof IOException) { // 连接断开
+            ctx.close();
+        } else {    // 业务异常 不需要断开
+            logger.error("end exception:", cause);
+        }
     }
 }

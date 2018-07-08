@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--播放空闲-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item >
+        <shape android:shape="oval" >
+
+            <solid android:color="@color/whiteDark" />
+            <size android:width="100dp"
+                android:height="100dp"/>
+            <stroke android:color="@color/chatBackground"
+                android:width="1dp"/>
+        </shape>
+    </item>
+    <!--android:bottom="33dp" android:top="33dp" android:left="33dp" android:right="33dp"-->
+    <item android:bottom="20dp" android:top="20dp" android:left="30dp" android:right="10dp"
+        android:drawable="@drawable/ic_action_playback_play_big"/>
+
+
+
+
+
+
+</layer-list>

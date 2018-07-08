@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--录音空闲状态-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval"
+    android:useLevel="false">
+    <!--背景色-->
+    <solid android:color="@android:color/holo_red_light" />
+
+    <size
+        android:height="100dp"
+        android:width="100dp" />
+</shape>

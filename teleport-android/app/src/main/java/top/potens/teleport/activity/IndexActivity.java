@@ -1,10 +1,12 @@
 package top.potens.teleport.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ExpandableListView;
 
 
@@ -13,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 
-import java.net.MulticastSocket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -26,9 +26,10 @@ import top.potens.teleport.adapter.FriendAdapter;
 import top.potens.teleport.bean.FriendGroupBean;
 import top.potens.teleport.bean.FriendUserBean;
 import top.potens.teleport.constant.HandlerCode;
+import top.potens.teleport.constant.HeadMapping;
 import top.potens.teleport.data.FriendData;
-import top.potens.teleport.util.DeviceUtil;
 import top.potens.teleport.util.XBossUtil;
+import top.potens.teleport.util.XGlobalDataUtil;
 
 /**
  * Created by wenshao on 2018/4/29.
@@ -39,7 +40,7 @@ public class IndexActivity extends AppCompatActivity {
     private Context mContext;
     private ExpandableListView elv_user_list;
     private List<FriendGroupBean> mFriends;
-    private MulticastSocket multicastSocket;
+    private FriendAdapter mFriendAdapter;
 
 
     private final MyHandler mHandler = new MyHandler(this);
@@ -55,13 +56,14 @@ public class IndexActivity extends AppCompatActivity {
             XBossUtil.sendRPC(rpcHeader, new RPCCallback<List<Client>>() {
                 @Override
                 public void succeed(List<Client> clients) {
-                    List<FriendUserBean> intranetList = new ArrayList<>();
+                    XGlobalDataUtil.cleanFriendUserBean();
                     for (Client client : clients) {
-                        FriendUserBean friendUserBean = new FriendUserBean(client.getChannelId(), client.getShowName(), R.mipmap.head3);
-                        intranetList.add(friendUserBean);
+                        FriendUserBean friendUserBean = new FriendUserBean(client.getChannelId(), client.getShowName(), HeadMapping.getHead(client.getImage()));
+                        XGlobalDataUtil.addFriendUserBean(friendUserBean);
                     }
-                    mFriends = FriendData.getFixationFriendGroupData(intranetList);
-                    mHandler.sendEmptyMessage(HandlerCode.LOCAL_QUERY_SUC);
+                    XGlobalDataUtil.addFriendUserBeansListener(mHandler);
+                    mFriends = FriendData.getFixationFriendGroupData(XGlobalDataUtil.getFriendUserBeans());
+                    mHandler.sendEmptyMessage(HandlerCode.RPC_QUERY_SUC);
                 }
 
                 @Override
@@ -69,7 +71,6 @@ public class IndexActivity extends AppCompatActivity {
                     logger.error("rpc error "+s);
                 }
             });
-
         }
     };
 
@@ -90,15 +91,32 @@ public class IndexActivity extends AppCompatActivity {
             super.handleMessage(msg);
             IndexActivity activity = mActivity.get();
             if (activity != null) {
-                if (msg.what == HandlerCode.LOCAL_QUERY_SUC) {
-                    FriendAdapter friendAdapter = new FriendAdapter(activity.getApplication(), activity.mFriends);
-                    activity.elv_user_list.setAdapter(friendAdapter);
+                if (msg.what == HandlerCode.RPC_QUERY_SUC) {
+                    activity.mFriendAdapter = new FriendAdapter(activity.getApplication(), activity.mFriends);
+                    activity.elv_user_list.setAdapter(activity.mFriendAdapter);
+                    activity.setClick();
+                    logger.info(activity.mFriends.toString());
+                } else if (msg.what == HandlerCode.DATA_CHANGE && activity.elv_user_list.getAdapter() !=null) {
+                    activity.mFriendAdapter.notifyDataSetChanged();
                 }
 
             }
         }
     }
-
+    private void setClick() {
+        elv_user_list.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                Intent intent = new Intent(IndexActivity.this.mContext, ChatWindowActivity.class);
+                FriendUserBean friendUserBean = mFriends.get(groupPosition).getFriendUserBeans().get(childPosition);
+                Bundle bundle=new Bundle();
+                bundle.putSerializable("userInfo",friendUserBean);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                return true;
+            }
+        });
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

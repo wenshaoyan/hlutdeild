@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="textSize" format="dimension" />
+    <attr name="textColor" format="color" />
+    <attr name="startAngle" format="integer"/>
+    <attr name="duration" format="integer"/>
+
+    <attr name="direction" >
+        <enum name="left" value="1"/>
+        <enum name="right" value="2"/>
+        <enum name="above" value="3"/>
+        <enum name="below" value="4"/>
+
+    </attr>
+
+    <declare-styleable name="DragBubbleView">
+        <attr name="bubbleRadius" format="dimension" />
+        <attr name="bubbleColor" format="color" />
+        <attr name="text" format="string" />
+        <attr name="textSize" />
+        <attr name="textColor" />
+
+    </declare-styleable>
+
+    <!--
+            max                 最大进度
+            startAngle             进度从圆环的哪个角度开始走
+            backColor             圆环内部的填充色
+            roundColor             圆环的颜色
+            roundProgressColor  圆环进度的颜色
+            roundWidth             圆环宽度
+            textColor             中心文字的颜色
+            textSize             中心文字的大小
+            textIsDisplayable     中心文字是否显示
+            src                   中心显示图片
+            style = 0/1          进度的风格，实心或者空心
+         -->
+    <declare-styleable name="CirclePlayProgress">
+        <attr name="max" format="integer" />
+        <attr name="startAngle" />
+        <attr name="backColor" format="color"/>
+        <attr name="roundColor" format="color"/>
+        <attr name="roundProgressColor" format="color"/>
+        <attr name="roundWidth" format="dimension"/>
+        <attr name="textColor"/>
+        <attr name="textSize"/>
+        <attr name="textIsDisplayable" format="boolean"/>
+        <attr name="src" format="reference" />
+        <attr name="type" >
+            <enum name="STROKE" value="0"/>
+            <enum name="FILL" value="1"/>
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="VoicePlayingView">
+        <attr name="arcColor" format="color"/>
+        <attr name="arcStrokeWidth" format="integer"/>
+        <attr name="toRightDistance" format="dimension" />
+        <attr name="toLeftDistance" format="dimension" />
+        <attr name="direction" />
+        <attr name="duration" />
+        <attr name="url" format="string"/>
+        <attr name="textSize" />
+        <attr name="textColor" />
+    </declare-styleable>
+
+</resources>

@@ -27,6 +27,21 @@ public class HandlerCode {
      */
     public final static int LOCAL_QUERY_FAIL = 0x004;
 
+    /**
+     * rpc加载成功
+     */
+    public final static int RPC_QUERY_SUC = 0x005;
+    /**
+     * rpc加载成功
+     */
+    public final static int RPC_QUERY_FAIL = 0x006;
+
+
+    /**
+     * 数据变化
+     */
+    public final static int DATA_CHANGE = 0x007;
+
 
 
     // 特定返回码
@@ -43,6 +58,9 @@ public class HandlerCode {
      * 初始化成功
      */
     public final static int HTTP_INIT_SUC = 0x102;
+
+
+
 
 
 }

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingStart="20dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp"
+    android:id="@+id/ry_message_main">
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:id="@+id/rw_head"
+        android:src="@mipmap/head1"
+        android:layout_alignParentEnd="true"
+        />
+
+    <TextView
+        android:id="@+id/tv_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:background="@drawable/aio_user_bg_nor_12"
+        android:layout_toStartOf="@+id/rw_head"
+        android:gravity="left"
+        android:visibility="gone"/>
+    <com.wenshao.chat.view.VoicePlayingView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/vpv_audio"
+        android:background="@drawable/aio_user_bg_nor_12"
+        android:layout_toStartOf="@+id/rw_head"
+        app:arcColor="@color/deepGray"
+        app:toRightDistance="5dp"
+        app:direction="right"
+        app:textSize="15sp"
+        />
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxHeight="230dp"
+        android:maxWidth="230dp"
+        android:layout_toStartOf="@+id/rw_head"
+        android:id="@+id/rw_content"
+        android:layout_marginEnd="8dp"
+        android:visibility="visible"
+        android:layout_marginTop="2dp"
+        android:layout_centerInParent="true"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"/>
+
+</RelativeLayout>

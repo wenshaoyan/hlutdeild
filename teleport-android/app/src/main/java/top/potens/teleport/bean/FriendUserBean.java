@@ -5,11 +5,14 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.RawRes;
 
+import java.io.Serializable;
+
 /**
  * Created by wenshao on 2017/3/16.
  * 好友用户对象
  */
-public class FriendUserBean {
+public class FriendUserBean implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String name;
 

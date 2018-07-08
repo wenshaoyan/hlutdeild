@@ -1,5 +1,6 @@
 package top.potens.jnet.handler;
 
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.potens.jnet.common.FileMapping;
@@ -23,7 +24,6 @@ import java.util.Map;
 public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
     private static final Logger logger = LoggerFactory.getLogger(FileHandler.class);
 
-    private static ChannelHandlerContext mCtx;
     private static final Map<Integer, FileCallback> fileMap = new HashMap<>();
     private FileCallback mFileReceiveCallback;
 
@@ -39,7 +39,6 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        mCtx = ctx;
         ctx.fireChannelActive();
     }
 
@@ -53,7 +52,7 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
                 String[] split = protocol.getTextBody().split("\\?");
                 // 通知开始发送
                 fileCallback.start(protocol.getId(), split[1], Long.parseLong(split[0]));
-                sendFileContinue(new File(split[1]), protocol.getId(), protocol.getReceive(), protocol.getReceiveId());
+                sendFileContinue(ctx.channel(), new File(split[1]), protocol.getId(), protocol.getReceive(), protocol.getReceiveId());
             }
         }  else if (protocol.getType() == HBinaryProtocol.TYPE_FILE) {
             FileMapping.getInstance().write(protocol.getId(), protocol.getStartRange(), protocol.getBody(), mFileReceiveCallback);
@@ -62,29 +61,22 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
         }
 
     }
-
-    // 发送文件外部调用方法
-    public void sendFile(File file, byte receive, String receiveId, FileCallback fileCallback) throws FileNotFoundException {
-        int id = HBinaryProtocol.randomId();
-        sendFileApply(file, id, receive, receiveId);
-        fileMap.put(id, fileCallback);
-
-    }
-
     // 发送文件申请包
-    private void sendFileApply(File file, int id, byte receive, String receiveId) throws FileNotFoundException {
+    public void sendFileApply(Channel channel, File file, int id, byte receive, String receiveId, FileCallback fileCallback) throws FileNotFoundException {
         boolean exists = file.exists();
         if (!exists) {
             throw new FileNotFoundException("not found file " + file.getAbsolutePath());
         }
+        fileMap.put(id, fileCallback);
+
         // 发送申请包 带上文件名称和文件大小 中间以? 分割
         HBinaryProtocol applyHBinaryProtocol = HBinaryProtocol.buildSimpleText(id, file.length() + "?" + file.getAbsolutePath(), receive, receiveId, HBinaryProtocol.TYPE_FILE_APPLY);
-        mCtx.writeAndFlush(applyHBinaryProtocol);
+        channel.writeAndFlush(applyHBinaryProtocol);
 
     }
 
     // 持续发送文件
-    private void sendFileContinue(File msg, int id, byte receive, String receiveId) {
+    private void sendFileContinue(Channel channel, File msg, int id, byte receive, String receiveId) {
         RandomAccessFile rf = null;
         try {
             rf = new RandomAccessFile(msg, "r");
@@ -105,7 +97,7 @@ public class FileHandler extends SimpleChannelInboundHandler<HBinaryProtocol> {
             FileCallback fileCallback = fileMap.get(id);
             while ((len = rf.read(bytes, 0, bytes.length)) != -1) {
                 HBinaryProtocol hBinaryProtocol = HBinaryProtocol.buildFile(id, bytes, receive, receiveId, rfSeek, rfSeek += len);
-                mCtx.writeAndFlush(hBinaryProtocol);
+                channel.writeAndFlush(hBinaryProtocol);
                 fileCallback.process(id, tool, rfSeek);
                 rf.seek(rfSeek);
                 i++;

@@ -32,6 +32,7 @@ public class BroadSocket {
     private static String localIp;
     private static byte[] localIpByte;
     private String serverIp;
+    private boolean isStart;
 
     public String getLocalIp() {
         return localIp;
@@ -128,6 +129,11 @@ public class BroadSocket {
     public byte getRole() {
         return role;
     }
+    // 停止
+    public void stop() {
+        this.roleChangeListener = null;
+        isStart = false;
+    }
 
     public void setRole(byte role) {
         if (this.getRole() == RoleChangeListener.ROLE_WORK && role == RoleChangeListener.ROlE_SERVER) {   // work -> server
@@ -157,6 +163,7 @@ public class BroadSocket {
     // 初始化socket
     private void initSocket() {
         try {
+            isStart = true;
             inetAddress = InetAddress.getByName(this.host);
             // 创建组播连接socket
             this.mus = new MulticastSocket(port);
@@ -189,7 +196,7 @@ public class BroadSocket {
         new Thread(new UDPRunnable(this.mus, new BroadEventListener() {
             @Override
             public void onMessage(byte[] bytes) {
-                receiveBasicEvent.onMessage(bytes);
+                if (isStart) receiveBasicEvent.onMessage(bytes);
             }
         })).start();
     }

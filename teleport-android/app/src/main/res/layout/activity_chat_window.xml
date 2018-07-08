@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<top.potens.teleport.view.CustomRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/chatBackground"
+    android:id="@+id/rl_chat_main">
+
+
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/rv_message_list"
+        android:layout_below="@+id/header"
+        android:layout_above="@+id/ll_foot" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:id="@+id/ll_foot">
+
+        <top.potens.teleport.view.MultiLineEditText
+            android:padding="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_rounded_edittext"
+            android:layout_margin="10dp"
+            android:id="@+id/et_message"
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:minLines="1"
+            android:maxLines="3"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:id="@+id/ll_shortcut_icon"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/ib_calculator"
+                android:src="@mipmap/ic_action_calculator_holo"
+                android:background="@null"
+                android:layout_weight="1" />
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/ib_voice"
+                android:src="@mipmap/ic_action_mic_holo"
+                android:background="@null"
+                android:layout_weight="1" />
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/ib_image"
+                android:src="@mipmap/ic_action_picture_holo"
+                android:background="@null"
+                android:layout_weight="1"/>
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/ib_camera"
+                android:src="@mipmap/ic_action_camera_holo"
+                android:background="@null"
+                android:layout_weight="1"/>
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/ib_face"
+                android:src="@mipmap/ic_action_emo_laugh_holo"
+                android:background="@null"
+                android:layout_weight="1"/>
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/ib_more"
+                android:src="@mipmap/ic_action_add_holo"
+                android:background="@null"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+        <include
+            android:id="@+id/face_container"
+            layout="@layout/chat_face_container"
+            android:visibility="gone" />
+        <include android:id="@+id/record_container"
+            layout="@layout/chat_record_container"
+            android:visibility="gone"/>
+
+
+
+    </LinearLayout>
+
+
+
+
+
+
+
+</top.potens.teleport.view.CustomRelativeLayout>
+
+

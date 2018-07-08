@@ -19,11 +19,13 @@ public class RpcResponseData implements RPCReqHandlerListener {
     public String _initDeviceInfo(String channelId, Map<String, String> args) {
         String model = args.get("model");
         String name = args.get("name");
+        String head = args.get("head");
         Client client = ChannelGroupHelper.getClient(channelId);
         client.setDeviceName(name);
         client.setDeviceModel(model);
+        client.setImage(head);
         // 通知所有的client有新的client加入
-        ChannelGroupHelper.broadcast(HBinaryProtocol.buildEventAll("onClientJoin", "1233333"));
+        ChannelGroupHelper.broadcast(HBinaryProtocol.buildEventAll("onClientJoin", client.getAddress()));
         return "ok";
     }
     // 获取所有client

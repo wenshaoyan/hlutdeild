@@ -4,11 +4,14 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.potens.jnet.bootstrap.BossClient;
+import top.potens.jnet.exception.ChannelHeartException;
 import top.potens.jnet.protocol.HBinaryProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+
+import java.io.IOException;
 
 /**
  * Created by wenshao on 2018/5/6.
@@ -28,7 +31,7 @@ public class HeartBeatServerHandler extends SimpleChannelInboundHandler<HBinaryP
                 logger.warn("channelId=" + ch.id().asShortText() + " channel not send heard,loss_connect_time=" + loss_connect_time);
                 if (loss_connect_time > 2) {
                     logger.error("channelId=" + ch.id().asShortText() + " channel not active");
-                    ch.close();
+                    throw new ChannelHeartException("channel no heartbeat");
                 }
             }
         } else {
